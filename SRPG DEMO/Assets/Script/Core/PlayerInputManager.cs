@@ -1,0 +1,73 @@
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.Tilemaps;
+
+public class PlayerInputManager : MonoBehaviour
+{
+    public bool CanProcessInput()
+    {
+        return !GameManager.instance.isGameStop;
+    }
+
+    public Vector3Int GetMouseInTilemapPosition(Tilemap tilemap)
+    {
+        var ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        Vector3Int vector = tilemap.WorldToCell(ray.GetPoint(-ray.origin.z / ray.direction.z));
+        return vector;
+    }
+
+    public int GetArrowKeyDown()
+    {
+        if (Input.GetKeyDown(KeyCode.UpArrow))
+        {
+            return 1;
+        }else if (Input.GetKeyDown(KeyCode.RightArrow))
+        {
+            return 2;
+        }else if (Input.GetKeyDown(KeyCode.DownArrow))
+        {
+            return 3;
+        }else if (Input.GetKeyDown(KeyCode.LeftArrow))
+        {
+            return 4;
+        }
+
+        return 0;
+    }
+
+    public bool GetEscapeButton()
+    {
+        return Input.GetKeyDown(KeyCode.Escape);
+    }
+
+    public bool GetBagButton()
+    {
+        if (CanProcessInput())
+        {
+            return Input.GetKeyDown(KeyCode.B);
+        }
+
+        return false;
+    }
+
+    public bool GetPlayerLeftMouseKeyDown()
+    {
+        if (CanProcessInput())
+        {
+            return Input.GetKeyDown(KeyCode.Mouse0);
+        }
+
+        return false;
+    }
+
+    public bool GetPlayerRightMouseKeyDown()
+    {
+        if (CanProcessInput())
+        {
+            return Input.GetKeyDown(KeyCode.Mouse1);
+        }
+
+        return false;
+    }
+}

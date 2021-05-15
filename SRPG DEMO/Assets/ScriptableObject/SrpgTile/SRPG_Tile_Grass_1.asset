@@ -35,5 +35,6 @@ MonoBehaviour:
   m_Flags: 1
   m_ColliderType: 1
   m_TerrainType: 0
-  m_AvoidChange: 0
+  m_AvoidChange: 15
   m_MoveCost: 1
+  m_Walkable: 0

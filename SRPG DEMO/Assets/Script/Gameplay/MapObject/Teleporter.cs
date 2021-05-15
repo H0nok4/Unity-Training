@@ -17,7 +17,7 @@ public class Teleporter : InteractiveObject
     }
     public override void Interact(SrpgClass srpgClass)
     {
-        if(ScenceManager.instence.mapObjectGameObjects.ContainsKey(targetPos))
+        if(ScenceManager.instance.mapObjectGameObjects.ContainsKey(targetPos))
         {
             return;
         }

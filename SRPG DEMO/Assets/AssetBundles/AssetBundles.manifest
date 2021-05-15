@@ -1,0 +1,10 @@
+ManifestFileVersion: 0
+CRC: 3616275028
+AssetBundleManifest:
+  AssetBundleInfos:
+    Info_0:
+      Name: srpgclass
+      Dependencies: {}
+    Info_1:
+      Name: sprite/itemsprites
+      Dependencies: {}

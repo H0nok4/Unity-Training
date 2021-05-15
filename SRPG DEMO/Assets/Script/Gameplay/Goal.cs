@@ -2,8 +2,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-[Serializable]
+
 [CreateAssetMenu(menuName = "SRPG/Goal", fileName = "New Goal.asset")]
+[Serializable]
 public class Goal : ScriptableObject
 {
     public WinTarget winTarget;

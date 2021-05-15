@@ -1,0 +1,23 @@
+ManifestFileVersion: 0
+CRC: 2792021848
+Hashes:
+  AssetFileHash:
+    serializedVersion: 2
+    Hash: a99bc0de8a398f4720896869f9fca63d
+  TypeTreeHash:
+    serializedVersion: 2
+    Hash: b7506faad1b59f65dda6f99a4bb3e78a
+HashAppended: 0
+ClassTypes:
+- Class: 28
+  Script: {instanceID: 0}
+- Class: 213
+  Script: {instanceID: 0}
+- Class: 687078895
+  Script: {instanceID: 0}
+SerializeReferenceClassIdentifiers: []
+Assets:
+- Assets/Resources/Sprite/ItemSprite/Bandage.png
+- Assets/Resources/Sprite/ItemSprite/Potion.png
+- Assets/Resources/Sprite/ItemSprite/Bomb.png
+Dependencies: []

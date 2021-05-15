@@ -25,16 +25,15 @@ public class ClassAnimator : MonoBehaviour//角色自定义动画播放器
     SpriteAnimator walkLeftAnim;
     SpriteAnimator walkRightAnim;
 
-    //
-    SpriteAnimator currentAnim;//这个变量用来调用目前播放的是哪个动画
+    SpriteAnimator currentAnim;
 
     SpriteRenderer spriteRenderer;//播放动画所需要的spriteRenderer组件，播放动画需要用它切换目标的sprite
 
-    [SerializeField] FaceDirection defaultDirection = FaceDirection.Down;//NPC的默认朝向，默认为下
+    [SerializeField] FaceDirection defaultDirection = FaceDirection.Down;//默认朝向，默认为下
 
     private void Start()
     {
-        spriteRenderer = GetComponent<SpriteRenderer>();//获取当前物体的sprteRenderer组件。
+        spriteRenderer = GetComponent<SpriteRenderer>();
         //初始化该角色所拥有的各个动画
         walkDownAnim = new SpriteAnimator(walkDownSprites, spriteRenderer);
         walkUpAnim = new SpriteAnimator(walkUpSprites, spriteRenderer);
@@ -76,7 +75,7 @@ public class ClassAnimator : MonoBehaviour//角色自定义动画播放器
         prvIsWalked = isWalked;
     }
 
-    public void SetFaceDirection(FaceDirection faceDirection)//设置NPC初始化的动画朝向
+    public void SetFaceDirection(FaceDirection faceDirection)//设置初始化的动画朝向
     {
         if (faceDirection == FaceDirection.Right)
             moveX = 1;
@@ -88,7 +87,7 @@ public class ClassAnimator : MonoBehaviour//角色自定义动画播放器
             moveY = -1;
     }
 
-    public FaceDirection DefaultFaceDirection//向外暴露NPC实例的默认朝向
+    public FaceDirection DefaultFaceDirection//默认朝向
     {
         get => defaultDirection;
     }

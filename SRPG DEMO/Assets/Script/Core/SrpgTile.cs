@@ -11,7 +11,8 @@ public enum TerrainType
     Road,
     Woods,
     Decoration,
-    Barrier
+    Barrier,
+    Sand
 }
 [Serializable]
 [CreateAssetMenu(fileName = "New Srpg Tile.asset",menuName = "SRPG/Tile")]

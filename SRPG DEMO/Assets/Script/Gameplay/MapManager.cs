@@ -35,11 +35,12 @@ public class MapManager : MonoBehaviour
                 Destroy(gameObject);
             }
         }
-        DontDestroyOnLoad(gameObject);
+
     }
     public void HandleUpdate()
     {
         SetPlayerCursorPositionToMousePosition();
+
         CheckMapObjectOnPlayerCursorPosition();
     }
 
@@ -67,6 +68,7 @@ public class MapManager : MonoBehaviour
 
     }
 
+    #region 设置玩家鼠标光标的位置
     public void SetPlayerCursorPositionToMousePosition()
     {
         Vector3Int mousePosition = playerInputManager.GetMouseInTilemapPosition(tilemaps[1]);
@@ -83,7 +85,7 @@ public class MapManager : MonoBehaviour
                 var Cursor = GameObject.FindGameObjectWithTag("playerCursor");
                 if(Cursor == null)
                 {
-                    playerCursor = GameObject.Instantiate(playerCursorPrefab);
+                    playerCursor = Instantiate(playerCursorPrefab);
                     CursorPosition = mousePosition;
                     playerCursor.transform.position = CursorPosition;
                 }
@@ -104,9 +106,11 @@ public class MapManager : MonoBehaviour
             playerCursorMapObject = null;
         }
     }
+    #endregion
 
     public MapObject CheckMapObjectOnPlayerCursorPosition()
     {
+        /*
         foreach(var kvp in scenceManager.mapObjectGameObjects)
         {
             var gameobjectMapObject = kvp.Value.GetComponent<MapObject>();
@@ -124,6 +128,12 @@ public class MapManager : MonoBehaviour
                 }
 
             }
+        }
+        */
+
+        if (ScenceManager.instance.mapObjectGameObjects.ContainsKey(GetCursorPosition()))
+        {
+            return ScenceManager.instance.mapObjectGameObjects[GetCursorPosition()].GetComponent<MapObject>();
         }
 
         playerCursorMapObject = null;

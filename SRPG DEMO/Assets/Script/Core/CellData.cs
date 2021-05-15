@@ -49,4 +49,9 @@ public class CellData
         m_CellType = cellType;
     }
 
+    public override bool Equals(object obj)
+    {
+        return ((CellData)obj).m_Position.x == this.m_Position.x && ((CellData)obj).m_Position.y == this.m_Position.y;
+    }
+
 }

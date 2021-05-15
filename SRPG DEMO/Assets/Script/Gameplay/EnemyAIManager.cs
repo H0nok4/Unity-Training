@@ -54,7 +54,7 @@ public class EnemyAIManager : MonoBehaviour
     {
         foreach(var enemyClass in scenceManager.enemyClasses)
         {
-            if (enemyClass.IsActived == false)
+            if (enemyClass.gameObject.activeSelf && enemyClass.IsActived == false)
             {
                 return false;
             }

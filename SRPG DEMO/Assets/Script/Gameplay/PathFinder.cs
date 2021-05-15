@@ -5,6 +5,7 @@ using UnityEngine.Tilemaps;
 
 public class PathFinder : MonoBehaviour
 {
+    #region 成员变量
     [SerializeField] Dictionary<Vector3Int,GameObject> moveCursors;
     [SerializeField] GameObject CursorObject;
     [SerializeField] GameObject mapObjectBase;
@@ -13,6 +14,9 @@ public class PathFinder : MonoBehaviour
     {
         get { return moveCursors; }
     }
+    #endregion
+
+    #region 方法
     public void ClearMoveCursors()
     {
         if(moveCursors != null)
@@ -64,9 +68,10 @@ public class PathFinder : MonoBehaviour
         }
 
         //TO DO：清除moveCursor中被其他mapObject占用的格子
-        DeleteAlreadyUseAIMoveCursors(GameObject.Find("GameManager").GetComponent<ScenceManager>(),moveClass.m_Position,aIMoveCursors);
+        DeleteAlreadyUseAIMoveCursors(moveClass.m_Position,aIMoveCursors);
         return aIMoveCursors;
     }
+
     #region 创建移动范围
     //输入：需要移动的角色，以角色为中心开始创建移动范围
     //输出：一个装有所有移动位置的字典，Key为坐标，Value为显示出来的Cursor
@@ -115,17 +120,21 @@ public class PathFinder : MonoBehaviour
         return moveCursors;
     }
     #endregion
-    public void DeleteAlreadyUseMoveCursors(ScenceManager scenceManager,Vector3Int curPosition)
+    public void DeleteAlreadyUseMoveCursors(Vector3Int curPosition)
     {
-        if(scenceManager.mapObjectGameObjects != null)
+        if(ScenceManager.instance.mapObjectGameObjects != null)
         {
             List<Vector3Int> waitForDelete = new List<Vector3Int>();
             foreach(var moveCursor in moveCursors)
             {
-                if (scenceManager.mapObjectGameObjects.ContainsKey(moveCursor.Key) && moveCursor.Key != curPosition)
+                if (ScenceManager.instance.mapObjectGameObjects.ContainsKey(moveCursor.Key) && moveCursor.Key != curPosition )
                 {
-                    Destroy(moveCursor.Value);
-                    waitForDelete.Add(moveCursor.Key);
+                    if(ScenceManager.instance.mapObjectGameObjects[moveCursor.Key].activeSelf != false)
+                    {
+                        Destroy(moveCursor.Value);
+                        waitForDelete.Add(moveCursor.Key);
+                    }
+
                 }
             }
 
@@ -136,14 +145,14 @@ public class PathFinder : MonoBehaviour
         }
     }
 
-    public void DeleteAlreadyUseAIMoveCursors(ScenceManager scenceManager, Vector3Int curPosition,Dictionary<Vector3Int,int> aiMoveCursor)
+    public void DeleteAlreadyUseAIMoveCursors(Vector3Int curPosition,Dictionary<Vector3Int,int> aiMoveCursor)
     {
-        if (scenceManager.mapObjectGameObjects != null)
+        if (ScenceManager.instance.mapObjectGameObjects != null)
         {
             List<Vector3Int> waitForDelete = new List<Vector3Int>();
             foreach (var moveCursor in aiMoveCursor)
             {
-                if (scenceManager.mapObjectGameObjects.ContainsKey(moveCursor.Key) && moveCursor.Key != curPosition)
+                if (ScenceManager.instance.mapObjectGameObjects.ContainsKey(moveCursor.Key) && moveCursor.Key != curPosition)
                 {
                     waitForDelete.Add(moveCursor.Key);
                 }
@@ -184,7 +193,7 @@ public class PathFinder : MonoBehaviour
             //如果场上存在传送器，看看能不能抄近道
             //D(x,y)为x点到y点的距离，T(x)为离x最近的传送器的坐标
             //H(x,y) = min(D(x,y), D(x,T(x)) + D(T(y),y) )
-            cellData.H = Mathf.Min(Distance(startPos, targetPos), Distance(startPos, ScenceManager.instence.TryGetNearestTeleporter(startPos).pos) + Distance(ScenceManager.instence.TryGetNearestTeleporter(targetPos).pos, targetPos));
+            cellData.H = Mathf.Min(Distance(startPos, targetPos), Distance(startPos, ScenceManager.instance.TryGetNearestTeleporter(startPos).pos) + Distance(ScenceManager.instance.TryGetNearestTeleporter(targetPos).pos, targetPos));
         }
         else
         {
@@ -208,20 +217,24 @@ public class PathFinder : MonoBehaviour
         if (startPos == targetPos)
             return new List<CellData>();
         //A*算法计算出一条路径，然后角色就能根据路径上的点到达目标位置。
-        List<CellData> openList = new List<CellData>();
+        //List<CellData> openList = new List<CellData>();
+        PriorityQueue<CellData> openList = new PriorityQueue<CellData>(new SortByF(),false);
         List<CellData> closeList = new List<CellData>();
-
-        openList.Add(CreatAstarTileData(startPos, targetPos, MapManager.instance.tilemaps[1]));
+        
+        openList.Enqueue(CreatAstarTileData(startPos, targetPos, MapManager.instance.tilemaps[1]));
         while (openList.Count > 0)
         {
-            var curCellData = openList[0];
-            foreach(var cD in openList)
+            //var curCellData = openList[0];
+            var curCellData = openList.Dequeue();
+            /*
+            foreach (var cD in openList)
             {
                 curCellData = curCellData.F < cD.F ? curCellData : cD;
             }
+            */
 
             closeList.Add(curCellData);
-            openList.Remove(curCellData);
+            //openList.Remove(curCellData);
             foreach(var mD in moveDelta)
             {
                 var newPostion = new Vector3Int(curCellData.m_Position.x + mD[0], curCellData.m_Position.y + mD[1], 0);
@@ -238,15 +251,15 @@ public class PathFinder : MonoBehaviour
 
                     if (!IsContainsCellData(openList, newCellData) && !IsContainsCellData(closeList, newCellData))
                     {
-                        openList.Add(newCellData);
+                        openList.Enqueue(newCellData);
                     }
                 }
                 
             }
             //抄传送门近道
-            if (ScenceManager.instence.interactiveObjectGameObjects.ContainsKey(curCellData.m_Position))
+            if (ScenceManager.instance.interactiveObjectGameObjects.ContainsKey(curCellData.m_Position))
             {
-                var teleporter = ScenceManager.instence.interactiveObjectGameObjects[curCellData.m_Position].gameObject.GetComponent<Teleporter>();
+                var teleporter = ScenceManager.instance.interactiveObjectGameObjects[curCellData.m_Position].gameObject.GetComponent<Teleporter>();
                 if (teleporter != null)
                 {
                     var newCellData = CreatAstarTileData(teleporter.targetPos, targetPos, MapManager.instance.GetSrpgTilemap(), curCellData);
@@ -257,9 +270,9 @@ public class PathFinder : MonoBehaviour
                     }
                     if (!IsContainsCellData(openList, newCellData) && !IsContainsCellData(closeList, newCellData))
                     {
-                        openList.Add(newCellData);
+                        openList.Enqueue(newCellData);
                     }
-                    openList.Add(newCellData);
+                    openList.Enqueue(newCellData);
                 }
             }
         }
@@ -293,8 +306,23 @@ public class PathFinder : MonoBehaviour
         return false;
     }
 
+    public bool IsContainsCellData(PriorityQueue<CellData> cellDatas, CellData m_cellData)
+    {
+
+        return cellDatas.Contains(m_cellData);
+    }
+
     public int Distance(Vector3Int x,Vector3Int y)
     {
         return Mathf.Abs(y.x - x.x) + Mathf.Abs(y.y - x.y);
+    }
+    #endregion
+}
+
+public class SortByF : IComparer<CellData>
+{
+    public int Compare(CellData x, CellData y)
+    {
+        return x.F.CompareTo(y.F);
     }
 }

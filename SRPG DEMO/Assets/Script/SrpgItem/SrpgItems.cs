@@ -6,14 +6,17 @@ using System;
 #region 小药水
 public class SmallPotion : SrpgUseableItem
 {
-    public new Sprite sprite = Resources.Load<Sprite>("Sprite/ItemSprite/Potion");
-    public new string m_ItemName = "SmallPotion";
-    public new ItemUseTarget m_ItemUseTarget = ItemUseTarget.self;
-    public new int[][] m_UseRenge = new int[1][]
+    public SmallPotion()
     {
-        new int[1]{ 1 }
-    };
-    public new string m_Des = "Can healer user 35% maxHP";
+        sprite = ResourceManager.itemSpriteDic["SmallPotion"];
+        m_ItemName = "SmallPotion";
+        m_ItemUseTarget = ItemUseTarget.self;
+        m_UseRenge = new int[1][]{
+                    new int[1]{ 1 }
+                    };
+        m_Des = "Can healer user 35% maxHP";
+    }
+
 
     public override void Execute(SrpgClass srpgClass)
     {
@@ -33,15 +36,19 @@ public class SmallPotion : SrpgUseableItem
 #region 绷带
 public class Bandage : SrpgUseableItem
 {
-    public new string m_ItemName = "Bandage";
-    public new ItemUseTarget m_ItemUseTarget = ItemUseTarget.ally;
-    public new int[][] m_UseRenge = new int[3][]
+    public Bandage()
     {
-        new int[3]{ 0,1,0 },
-        new int[3]{ 1,0,1 },
-        new int[3]{ 0,1,0 }
-    };
-    public new string m_Des = "Can healer target 25% maxHP";
+        sprite = ResourceManager.itemSpriteDic["Bandage"];
+        m_ItemName = "Bandage";
+        m_ItemUseTarget = ItemUseTarget.ally;
+        m_UseRenge = new int[3][]
+        {
+            new int[3]{ 0,1,0 },
+            new int[3]{ 1,0,1 },
+            new int[3]{ 0,1,0 }
+        };
+        m_Des = "Can healer target 25% maxHP";
+    }
 
     public override void Execute(SrpgClass srpgClass)
     {
@@ -62,24 +69,28 @@ public class Bandage : SrpgUseableItem
 #region 炸弹
 public class Bomb : SrpgUseableItem
 {
-
-    public new string m_ItemName = "Bomb";
-    public new ItemUseTarget m_ItemUseTarget = ItemUseTarget.ally;
-    public new int[][] m_UseRenge = new int[5][]
+    public Bomb()
     {
-        new int[5]{ 0,0,1,0,0 },
-        new int[5]{ 0,0,1,0,0 },
-        new int[5]{ 1,1,0,1,1 },
-        new int[5]{ 0,0,1,0,0 },
-        new int[5]{ 0,0,1,0,0 },
-    };
-    public new string m_Des = "Can give target 20~50 damage";
+        sprite = ResourceManager.itemSpriteDic["Bomb"];
+        m_ItemName = "Bomb";
+        m_ItemUseTarget = ItemUseTarget.enemy;
+        m_UseRenge = new int[5][]
+        {
+            new int[5]{ 0,0,1,0,0 },
+            new int[5]{ 0,0,1,0,0 },
+            new int[5]{ 1,1,0,1,1 },
+            new int[5]{ 0,0,1,0,0 },
+            new int[5]{ 0,0,1,0,0 },
+        };
+        m_Des = "Can give target 20~50 damage";
+    }
+
+
 
     public override void Execute(SrpgClass srpgClass)
     {
         int damage = UnityEngine.Random.Range(20, 50);
-        
-
+        srpgClass.ChangeHealth(damage);
     }
 }
 #endregion

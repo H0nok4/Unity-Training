@@ -13,8 +13,8 @@ public class Test : MonoBehaviour
     {
         SrpgUseableItem potion = new SmallPotion();
         Sprite tempSprite = Resources.Load<Sprite>("Sprite/ItemSprite/Bandage");
-        sprite1.sprite = potion.sprite;
-        sprite2.sprite = tempSprite;
+        //sprite1.sprite = potion.sprite;
+        //sprite2.sprite = tempSprite;
     }
 
     private void Update()

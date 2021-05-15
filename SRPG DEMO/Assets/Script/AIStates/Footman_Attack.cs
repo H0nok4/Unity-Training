@@ -26,9 +26,10 @@ public class Footman_Attack : AIState
 
     public override IEnumerator Execute(SrpgClass srpgClass)
     {
+        Debug.LogWarning("Start");
         srpgClass.isRunningAI = true;
         var moveRenge =  pathFinder.CreatAIMoveRenge(srpgClass);
-
+        Debug.LogWarning("creat AI renge");
         int minDis = int.MaxValue;
         SrpgClass target = null;
         foreach(var playerUnit in scenceManager.playerClasses)
@@ -38,6 +39,7 @@ public class Footman_Attack : AIState
             target = Math.Abs(playerUnit.m_Position.x - srpgClass.m_Position.x) + Math.Abs(playerUnit.m_Position.y - srpgClass.m_Position.y) <= minDis ? playerUnit : target;
             minDis = Math.Min(Math.Abs(playerUnit.m_Position.x - srpgClass.m_Position.x) + Math.Abs(playerUnit.m_Position.y - srpgClass.m_Position.y), minDis);
         }
+        Debug.LogWarning("Find nearest target");
         var aStarPath = pathFinder.AstarCreatMovePath(srpgClass.m_Position, target.m_Position);
         foreach(var movePos in aStarPath)
         {
@@ -47,7 +49,7 @@ public class Footman_Attack : AIState
                 moveRenge[movePos.m_Position] += (3 + 2 * (Math.Abs(movePos.m_Position.x - srpgClass.m_Position.x) + Math.Abs(movePos.m_Position.y - srpgClass.m_Position.y)));
             }
         }
-
+        Debug.LogWarning("Creat A*Path");
         Dictionary<Vector3Int, AttackOrder> attackOrders = new Dictionary<Vector3Int, AttackOrder>();
         Dictionary<Vector3Int, int> tempScoreDic = new Dictionary<Vector3Int, int>();
         foreach(var movePos in moveRenge)
@@ -64,8 +66,8 @@ public class Footman_Attack : AIState
             }
 
         }
-
-        foreach(var score in tempScoreDic)
+        Debug.LogWarning("Find can AttackPos");
+        foreach (var score in tempScoreDic)
         {
             moveRenge[score.Key] += score.Value;
         }
@@ -75,12 +77,13 @@ public class Footman_Attack : AIState
         {
             maxScore = Math.Max(kvp.Value, maxScore);
         }
-
+        Debug.LogWarning("Calculate score");
         //找到得分最高的位置，然后看看目标位置是否有AttackOrder存在，如果有的话代表该位置需要攻击敌人，没有的话就是直接移动到该位置即可
-        foreach(var kvp in moveRenge)
+        foreach (var kvp in moveRenge)
         {
             if(kvp.Value == maxScore)
             {
+                Debug.LogWarning("attack target");
                 if (attackOrders.ContainsKey(kvp.Key))
                 {
                     //执行AttackOrder的命令，攻击目标
@@ -98,6 +101,7 @@ public class Footman_Attack : AIState
                 }
                 else
                 {
+                    Debug.LogWarning("Move to");
                     //移动范围内没有攻击目标的命令，直接移动到目的位置。
                     yield return srpgClass.StartPathMove(pathFinder.AstarCreatMovePath(srpgClass.m_Position, kvp.Key));
                     break;
@@ -110,7 +114,7 @@ public class Footman_Attack : AIState
             //TO DO:血量低下，改变状态为寻找治疗者或者使用加血道具
             srpgClass.StateMeching.ChangeCurState(Footman_RunAway.Instance());
         }
-
+        Debug.LogWarning("Running end");
         srpgClass.IsActived = true;
         srpgClass.isRunningAI = false;
     }
@@ -132,6 +136,11 @@ public class Footman_Attack : AIState
 
     public AttackOrder DetectingCanAttackPos(Vector3Int attackPos,int[][] attackRenge,SrpgClass attacker)
     {
+        //发现该位置是个可互动位置，不要走到那个位置攻击，可能会踩到传送门传送走，很憨
+        if (scenceManager.interactiveObjectGameObjects.ContainsKey(attackPos))
+        {
+            return null;
+        }
         int attackCenter = attackRenge.Length / 2;
         //List<AttackOrder> attackOrders = new List<AttackOrder>();
         PriorityQueue<AttackOrder> attackOrders = new PriorityQueue<AttackOrder>(new SortByScore());
@@ -148,7 +157,7 @@ public class Footman_Attack : AIState
                         {
                             int score = 0;  
                             SrpgClass defender = scenceManager.mapObjectGameObjects[targetPos].GetComponent<SrpgClass>();
-                            int damage = (int)(attacker.classProperty[SrpgClassPropertyType.Attack] * (100 - defender.classProperty[SrpgClassPropertyType.Defense]) / 100f);
+                            int damage = (int)(attacker.classProperty[SrpgClassPropertyType.Attack] * (100 - defender.classProperty[SrpgClassPropertyType.Defense]) / 100f) * (1 + ( 1 - (int)(defender.CurHealth / (float)defender.classProperty[SrpgClassPropertyType.MaxHealth])));
                             score += damage;
                             if (defender.CurHealth - attacker.classProperty[SrpgClassPropertyType.Attack] <= 0)
                             {

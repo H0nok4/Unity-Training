@@ -34,7 +34,7 @@ MonoBehaviour:
   m_InstancedGameObject: {fileID: 0}
   m_Flags: 1
   m_ColliderType: 1
-  m_TerrainType: 0
-  m_AvoidChange: 0
+  m_TerrainType: 5
+  m_AvoidChange: 10
   m_MoveCost: 16
   m_Walkable: 0

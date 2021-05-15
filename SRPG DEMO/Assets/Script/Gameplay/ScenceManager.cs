@@ -67,6 +67,8 @@ public class ScenceManager : MonoBehaviour
     {
         List<Vector3Int> needUpdatePosition = new List<Vector3Int>();
         List<GameObject> needAddGameobject = new List<GameObject>();
+        List<Vector3Int> needDeletePosition = new List<Vector3Int>();
+        List<GameObject> needDeleteGameObject = new List<GameObject>();
         foreach (var kvp in mapObjectGameObjects)
         {
             if(kvp.Value.GetComponent<MapObject>().m_Position != kvp.Key)
@@ -74,6 +76,10 @@ public class ScenceManager : MonoBehaviour
                 needAddGameobject.Add(kvp.Value);
                 needUpdatePosition.Add(kvp.Key);
 
+            }else if(kvp.Value.activeSelf == false)
+            {
+                needDeletePosition.Add(kvp.Key);
+                needDeleteGameObject.Add(kvp.Value);
             }
         }
 
@@ -85,6 +91,16 @@ public class ScenceManager : MonoBehaviour
         {
             mapObjectGameObjects.Remove(pos);
         }
+        foreach (var gameObject in needDeleteGameObject)
+        {
+            Destroy(gameObject);
+        }
+        foreach (var pos in needDeletePosition)
+        {
+            mapObjectGameObjects.Remove(pos);
+        }
+
+
 
     }
 
@@ -145,7 +161,7 @@ public class ScenceManager : MonoBehaviour
         }
         //移除之后，应该删除该角色的Object，并且更新该场景单位的坐标，最后
         UpdateMapObjectPosition();
-
+        onObjectUnregister.Invoke();
     }
 
     public InteractiveObject TryGetInteractiveObject(Vector3Int pos)

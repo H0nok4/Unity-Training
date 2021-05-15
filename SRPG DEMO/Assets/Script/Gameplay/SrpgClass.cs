@@ -32,8 +32,9 @@ public class SrpgClass :  MapObject
     [SerializeField] GameObject highLightSprite;
     [SerializeField] bool isActived;
     [SerializeField] AIStateMeching m_StateMeching;
-    [SerializeField] SrpgUseableItem[] m_Items;
+    [SerializeField] List<SrpgUseableItem> m_Items = new List<SrpgUseableItem>();
     [SerializeField] bool Inited = false;
+    [SerializeField] Coroutine pathMoving;
     #endregion
 
     #region 属性
@@ -63,6 +64,10 @@ public class SrpgClass :  MapObject
         set { isActived = value; }
     }
 
+    public ClassType classType
+    {
+        get { return m_classType; }
+    }
     public bool isRunningAI{ get; set;}
     public bool isWalked { get; set; }
     public bool isMoveingPath { get; set; }
@@ -94,6 +99,10 @@ public class SrpgClass :  MapObject
         get { return m_StateMeching; }
     }
 
+    public List<SrpgUseableItem> items
+    {
+        get { return m_Items; }
+    }
     #endregion
 
     #region 方法
@@ -113,7 +122,8 @@ public class SrpgClass :  MapObject
         curHealth = m_Property[SrpgClassPropertyType.MaxHealth];
         m_StateMeching = GetComponent<AIStateMeching>();
         m_StateMeching.InitStateMeching(this);
-        
+        SrpgUseableItem smallPostion = new SmallPotion();
+        m_Items.Add(smallPostion);
     }
 
     public void StartBattleInit()
@@ -218,7 +228,7 @@ public class SrpgClass :  MapObject
 
     public override void OnDispawn()
     {
-        Debug.Log("Class Dead!");
+
     }
 
     public void SetDefaultAIBaseOnClassType()
@@ -227,19 +237,24 @@ public class SrpgClass :  MapObject
         {
             m_StateMeching.SetCurrentState(Footman_Attack.Instance());
         }
-    } 
+    }
 
+    #region 生命值改变
+    //输入:准备改变的数值，正为减少，负为增加
+    //输出:无
     public void ChangeHealth(int m_value)
     {
-        curHealth += m_value;
+        curHealth -= m_value;
 
         if(curHealth <= 0)
         {
             //单位死亡，先隐藏角色，然后
-            gameObject.SetActive(false);
+            onDead();
         }
     }
+    #endregion
 
+    #region 被攻击方法
     public DamageDetail OnDamaged(SrpgClass attacker, SrpgTile srpgTile)
     {
         attacker.FaceTo(m_Position);
@@ -271,7 +286,7 @@ public class SrpgClass :  MapObject
             isCritical = rd2 <= attacker.classProperty[SrpgClassPropertyType.CritChance]
         };
 
-        ChangeHealth(-damage);
+        ChangeHealth(damage);
 
         //TO DO:武器序列化的时候将会带一串string，反序列化后用这一串string在专门设置的武器特效字典里找到对应的匿名函数。
         /*if (weapon.onDamageTarget != null)
@@ -284,7 +299,7 @@ public class SrpgClass :  MapObject
         return damageDetail;
         
     }
-
+    #endregion
     public void FaceTo(Vector3Int targetPos)
     {
         int deltaX = targetPos.x - m_Position.x;
@@ -353,7 +368,7 @@ public class SrpgClass :  MapObject
     {
 
         GameObject.Find("GameManager").GetComponent<BattleManager>().isWalking = false;
-        var interactiveObject = ScenceManager.instence.TryGetInteractiveObject(m_Position);
+        var interactiveObject = ScenceManager.instance.TryGetInteractiveObject(m_Position);
         //Temp:如果是玩家的话，会询问是否Interac。
         if(interactiveObject != null)
         {
@@ -365,12 +380,14 @@ public class SrpgClass :  MapObject
     public void TeleportTo(Vector3Int targetPos)
     {
         transform.position = targetPos;
-        StopCoroutine(StartPathMove(new List<CellData>()));
+        StopCoroutine("StartPathMove");
         UpdatePosition(targetPos);
     }
-    public void DestroySrpgClassUnit()
+
+    public void onDead()
     {
-        Destroy(gameObject);
+        gameObject.SetActive(false);
+        ScenceManager.instance.UnRegisterSRPGClass(this);
     }
 
     #endregion

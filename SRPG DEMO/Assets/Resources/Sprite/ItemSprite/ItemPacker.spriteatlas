@@ -43,7 +43,7 @@ SpriteAtlas:
   - {fileID: 21300000, guid: d61c533eccd5ca247949e1932877dcde, type: 3}
   m_PackedSpriteNamesToIndex:
   - Bandage
-  - Potion
+  - SmallPotion
   - Bomb
   m_Tag: ItemPacker
   m_IsVariant: 0

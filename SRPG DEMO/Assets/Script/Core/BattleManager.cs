@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.UI;
 
 public enum BattleStat
 {
@@ -10,6 +11,7 @@ public enum BattleStat
     PlayerCharacterSelect, 
     PlayerActionSelect,
     PlayerItemSelect,
+    PlayerItemTargetSelect,
     PlayerSkillSelect,
     PlayerAttackSelect,
     PlayerMoveSelect,
@@ -20,17 +22,26 @@ public enum BattleStat
 }
 public class BattleManager : MonoBehaviour
 {
+    #region 成员变量
     public BattleStat battleState;
     public PlayerInputManager playerInputManager;
     public PathFinder pathFinder;
     EnemyAIManager enemyAIManager;
 
+    public SrpgUseableItem curHoldItem;
     public SrpgClass curSelectClass;
     public SrpgClass preSelectClass;
     public GameObject actionSelectGameObject;
+    public GameObject itemSelectGameObject;
     public GameObject attackCursorPrefab;
     public GameObject mapObjectBase;
+    #region UI
+    public BattleCursorClassUI battleClassUI;
+    public BattleTileUI battleTileUI;
+    #endregion
     public Dictionary<Vector3Int, GameObject> attackCursors;
+    public Dictionary<Vector3Int, GameObject> itemUseCursors;
+    public List<SrpgClass> waitUnRegisterSrpgClass = new List<SrpgClass>();
     public Stack<Command> moveCommands = new Stack<Command>();
     public Stack<Command> attackCommands = new Stack<Command>();
 
@@ -38,9 +49,10 @@ public class BattleManager : MonoBehaviour
     public Goal curLevelGoal;
 
     public UnityAction onTurnsChange;
-    public static BattleManager instence;
+    public static BattleManager instance;
 
     public bool isWalking = false;
+    #endregion
 
     private void Awake()
     {
@@ -49,13 +61,13 @@ public class BattleManager : MonoBehaviour
         pathFinder = GetComponent<PathFinder>();
         enemyAIManager = GetComponent<EnemyAIManager>();
         #region 单例
-        if (instence == null)
+        if (instance == null)
         {
-            instence = this;
+            instance = this;
         }
         else
         {
-            if(instence != this)
+            if(instance != this)
             {
                 Destroy(gameObject);
             }
@@ -92,9 +104,14 @@ public class BattleManager : MonoBehaviour
             HandlePlayerBack();
         }else if (battleState == BattleStat.PlayerItemSelect)
         {
-            HandlePlayerItemSelect();
+
             HandlePlayerBack();
-        }else if(battleState == BattleStat.PlayerSkillSelect)
+        }else if(battleState == BattleStat.PlayerItemTargetSelect)
+        {
+            HandlePlayerSelectItemUsePosition();
+            HandlePlayerBack();
+        }
+        else if(battleState == BattleStat.PlayerSkillSelect)
         {
             HandlePlayerSkillSelect();
             HandlePlayerBack();
@@ -104,21 +121,31 @@ public class BattleManager : MonoBehaviour
             {
                 enemyAIManager.HandleUpdate();
             }
-            else
+            else if(battleState != BattleStat.PlayerWinEnd && battleState != BattleStat.PlayerLoseEnd)
             {
                 battleState = BattleStat.PlayerCharacterSelect;
                 StartNewPlayerTurn();
             }
 
+        }else if(battleState == BattleStat.PlayerWinEnd)
+        {
+
+        }else if(battleState == BattleStat.PlayerLoseEnd)
+        {
+
         }
 
-
+        UpdateBattleUI();
         HandleEnemyTurnStart();
     }
 
+    #region 判断是否开启AI回合
+    //输入:无
+    //效果:如果玩家的角色都行动过，则开始AI回合
+    //输出:无
     public void HandleEnemyTurnStart()
     {
-        if(battleState != BattleStat.EnemyTurn)
+        if(battleState != BattleStat.EnemyTurn && battleState != BattleStat.PlayerLoseEnd)
         {
             foreach (var playerUnit in ScenceManager.instance.playerClasses)
             {
@@ -127,10 +154,15 @@ public class BattleManager : MonoBehaviour
             }
 
             battleState = BattleStat.EnemyTurn;
-            //enemyAIManager.DecideState();
+            
         }
     }
+    #endregion
 
+    #region 开始新的回合
+    //输入:无
+    //效果:开启一个新的回合，有关回合数的方法会在这里调用和改变
+    //输出:无
     public void StartNewPlayerTurn()
     {
         foreach(var playerClass in ScenceManager.instance.playerClasses)
@@ -152,8 +184,41 @@ public class BattleManager : MonoBehaviour
         {
             neutralClass.IsActived = false;
         }
-    }
 
+        attackCommands.Clear();
+        moveCommands.Clear();
+
+    }
+    #endregion
+
+    #region 选择道具使用目标
+    //输入:无
+    //效果:当玩家按下左键的时候，检测位置有没有SrpgClass,有的话再判断是否是合法位置，都是是的话就对目标位置执行物品效果。
+    //输出:无
+    private void HandlePlayerSelectItemUsePosition()
+    {
+        if (playerInputManager.GetPlayerLeftMouseKeyDown())
+        {
+            var cursorPosition = playerInputManager.GetMouseInTilemapPosition(MapManager.instance.tilemaps[1]);
+            var isItemUsePosWasLegal = JudgeIsLegalItemUseTarget(cursorPosition);
+            if (isItemUsePosWasLegal)
+            {
+                curHoldItem.Execute(ScenceManager.instance.mapObjectGameObjects[cursorPosition].GetComponent<SrpgClass>());
+                curSelectClass.items.Remove(curHoldItem);//移除道具
+                ClearAttackCursor(itemUseCursors);//移除范围
+
+                if (battleState != BattleStat.PlayerWinEnd)
+                    battleState = BattleStat.PlayerActionSelect;
+                //目前使用道具不会结束本回合，如果需要结束回合，只需要将当前单位的isActived设为True然后将战斗状态设为选择单位即可
+            }
+        }
+    }
+    #endregion
+
+    #region 选择攻击位置
+    //输入:无
+    //效果:当玩家按下左键的时候，判断目标位置的敌人是否合法，如果是则进入攻击阶段
+    //输出:无
     private void HandlePlayerSelectAttackPosition()
     {
         //TO DO:攻击目标
@@ -162,27 +227,76 @@ public class BattleManager : MonoBehaviour
 
             var cursorPosition = playerInputManager.GetMouseInTilemapPosition(MapManager.instance.tilemaps[1]);
             //↓目标位置有AttackCursor，并且是个SRPGClass
-            if (attackCursors.ContainsKey(cursorPosition) && scenceManager.mapObjectGameObjects.ContainsKey(cursorPosition))
+            if (attackCursors.ContainsKey(cursorPosition) && ScenceManager.instance.mapObjectGameObjects.ContainsKey(cursorPosition))
             {
-                if( scenceManager.mapObjectGameObjects[cursorPosition].GetComponent<SrpgClass>()!=null && scenceManager.mapObjectGameObjects[cursorPosition].GetComponent<SrpgClass>().classCamp == ClassCamp.enemy)
+                if(ScenceManager.instance.mapObjectGameObjects[cursorPosition].GetComponent<SrpgClass>()!=null && ScenceManager.instance.mapObjectGameObjects[cursorPosition].GetComponent<SrpgClass>().classCamp == ClassCamp.enemy)
                 {
-                    ClearAttackCursor();
+                    ClearAttackCursor(attackCursors);
                     //AttackCommand attackCommand = new AttackCommand(curSelectClass, scenceManager.mapObjectGameObjects[cursorPosition].GetComponent<SrpgClass>());
-                    RunTurn(curSelectClass, scenceManager.mapObjectGameObjects[cursorPosition].GetComponent<SrpgClass>());
+                    RunTurn(curSelectClass, ScenceManager.instance.mapObjectGameObjects[cursorPosition].GetComponent<SrpgClass>());
                     //TO DO：攻击逻辑，然后将当前角色设为Unactive
                     //攻击时应该面向目标
                     //RunTurn(curSelectClass, scenceManager.mapObjectGameObjects[cursorPosition].GetComponent<SrpgClass>());
-                    battleState = BattleStat.PlayerCharacterSelect;
+                    if(battleState != BattleStat.PlayerWinEnd)
+                        battleState = BattleStat.PlayerCharacterSelect;
                 }
 
             }
             else
             {
-                ClearAttackCursor();
+                ClearAttackCursor(attackCursors);
                 battleState = BattleStat.PlayerActionSelect;
             }
         }
     }
+    #endregion
+
+    #region 判断使用物品的位置是否合法
+    //输入:Tilemap上的Cursor坐标
+    //效果:检测目标位置的角色阵营是否是合法的物品使用对象
+    //输出:是否合法
+    public bool JudgeIsLegalItemUseTarget(Vector3Int pos)
+    {
+        if (!ScenceManager.instance.mapObjectGameObjects.ContainsKey(pos))
+        {
+            return false;
+        }
+        var target = ScenceManager.instance.mapObjectGameObjects[pos].GetComponent<SrpgClass>();
+        switch (curHoldItem.m_ItemUseTarget)
+        {
+
+            case ItemUseTarget.ally:
+                //判断目标是否不为敌人
+                if (target != null)
+                {
+                    if (target.classCamp == ClassCamp.enemy || target.classCamp == ClassCamp.neutral)
+                    {
+                        return false;
+                    }
+                    else
+                        return true;
+                }
+                else
+                    return false;
+            case ItemUseTarget.enemy:
+                if (target != null)
+                {
+                    if (target.classCamp == ClassCamp.ally || target.classCamp == ClassCamp.neutral)
+                    {
+                        return false;
+                    }
+                    else
+                        return true;
+                }
+                else
+                    return false;
+            //判断目标是否不为友方
+            default:
+                return true;
+                //如果目标为自己，一般使用范围中只有自己,所以不用另做额外判断
+        }
+    }
+    #endregion
 
     public void RunTurn(SrpgClass attacker, SrpgClass defender, bool isSkill = false)
     {
@@ -191,6 +305,38 @@ public class BattleManager : MonoBehaviour
         attackCommands.Push(attackCommand);
 
     }
+
+    #region 更新战斗UI栏
+    //输入:无
+    //效果:更新战斗的左下角角色UI和右下角TileUI
+    //输出:无
+    public void UpdateBattleUI()
+    {
+        battleClassUI.UpdateUI(null);
+
+        var tile = MapManager.instance.GetCursorPositionSrpgTile();
+        battleTileUI.UpdateTileUI(tile);
+
+        var mapObject = MapManager.instance.CheckMapObjectOnPlayerCursorPosition();
+        if(mapObject != null)
+        {
+            var srpgClass = mapObject.gameObject.GetComponent<SrpgClass>();
+            battleClassUI.UpdateUI(srpgClass);
+        }
+
+
+
+
+
+
+    }
+
+    #endregion
+
+    #region 世界坐标转换为UGUI坐标
+    //输入:世界坐标Vector3
+    //效果:输入一个世界坐标位置，可以转换为相同位置的UGUI位置
+    //输出:UGUI坐标
     public Vector3 WorldToUGUI(Vector3 worldPos)
     {
         Vector2 screenPoint = Camera.main.WorldToScreenPoint(worldPos);//世界坐标转换为屏幕坐标
@@ -199,21 +345,29 @@ public class BattleManager : MonoBehaviour
         Vector2 anchorPos = screenPoint / screenSize * battleUIRectTransform.sizeDelta;//缩放得到UGUI坐标
         return anchorPos;
     }
+    #endregion
 
+    #region 设置当前选择的角色
+    //输入:角色的位置
+    //效果:尝试获取角色
+    //输出:无
     public void SetCurSelectClass(Vector3Int ClassPosition)
     {
         preSelectClass = curSelectClass;
-        curSelectClass = scenceManager.GetClassInVector3Int(ClassPosition);
+        curSelectClass = ScenceManager.instance.GetClassInVector3Int(ClassPosition);
     }
-
+    #endregion
     public void InitBatlleScence()
     {
         battleState = BattleStat.BattleStart;
-        scenceManager.InitClass();
-        scenceManager.InitAllMapObject();
+        ScenceManager.instance.InitClass();
+        ScenceManager.instance.InitAllMapObject();
         //播放剧本
     }
-
+    #region 玩家选择移动的位置
+    //输入:无
+    //效果:玩家点击左键的时候，判断位置是否合法，如果是的话，就移动目前的角色到目标位置
+    //输出:无
     public void HandlePlayerSelectMovePosition()
     {
         if (playerInputManager.GetPlayerLeftMouseKeyDown())
@@ -238,7 +392,12 @@ public class BattleManager : MonoBehaviour
             }
         }
     }
+    #endregion
 
+    #region 返回操作
+    //输入:无
+    //效果:帮助玩家返回，在不同的状态下有不同的返回操作。
+    //输出:无
     public void HandlePlayerBack()
     {
         if (playerInputManager.GetPlayerRightMouseKeyDown())
@@ -249,7 +408,7 @@ public class BattleManager : MonoBehaviour
                 battleState = BattleStat.PlayerCharacterSelect;
             }else if(battleState == BattleStat.PlayerAttackSelect)//取消攻击选择
             {
-                ClearAttackCursor();
+                ClearAttackCursor(attackCursors);
                 battleState = BattleStat.PlayerActionSelect;
             }else if(battleState == BattleStat.PlayerActionSelect)//撤销移动
             {
@@ -259,10 +418,25 @@ public class BattleManager : MonoBehaviour
                 var preMoveCommand = moveCommands.Pop();
                 preMoveCommand.Un_Do();
                 battleState = BattleStat.PlayerCharacterSelect;
+            }else if(battleState == BattleStat.PlayerItemSelect)
+            {
+                itemSelectGameObject.SetActive(false);
+                SetActionSelecterActive();
+                battleState = BattleStat.PlayerActionSelect;
+            }else if(battleState == BattleStat.PlayerItemTargetSelect)
+            {
+                ClearAttackCursor(itemUseCursors);
+                SetItemSelecterActive();
+                battleState = BattleStat.PlayerItemSelect;
             }
         }
     }
+    #endregion
 
+    #region 玩家选择角色
+    //输入:无
+    //效果:玩家按下左键的时候，判断目标位置的角色是否合法，是的话则进入玩家移动选择阶段
+    //输出:无
     public void HandlePlayerSelectSrpgClass()
     {
         if (playerInputManager.GetPlayerLeftMouseKeyDown())
@@ -274,7 +448,7 @@ public class BattleManager : MonoBehaviour
                 battleState = BattleStat.PlayerMoveSelect;
                 pathFinder.ClearMoveCursors();
                 GetCurSrpgMoveRenge();
-                pathFinder.DeleteAlreadyUseMoveCursors(scenceManager,curSelectClass.m_Position);
+                pathFinder.DeleteAlreadyUseMoveCursors(curSelectClass.m_Position);
             }
             else
             {
@@ -282,17 +456,17 @@ public class BattleManager : MonoBehaviour
             }
         }
     }
-
-    public void HandlePlayerItemSelect()
-    {
-
-    }
+    #endregion
 
     public void HandlePlayerSkillSelect()
     {
 
     }
 
+    #region 玩家选择行动阶段
+    //输入:无
+    //效果:当是玩家选择行动的阶段，将行动选择栏显示出来
+    //输出:无
     public void HandlePlayerSelectAction()
     {
         if(curSelectClass != null && curSelectClass.classCamp == ClassCamp.player)
@@ -304,27 +478,46 @@ public class BattleManager : MonoBehaviour
                 //可以使用角色的位置到屏幕中心点画一条向量，向量的距离为UI离角色的距离，以向量的结束点为目标位置。
                 if (actionSelectGameObject.activeSelf == false)
                     SetActionSelecterActive();
-
-
             }
 
         }
-    } 
+    }
+    #endregion
 
+    #region 物品的使用
+    //输入:被使用的物品
+    //效果:进入物品目标的选择阶段
+    //输出:无
+    public void HandleItemUse(SrpgUseableItem item)
+    {
+        itemSelectGameObject.SetActive(false);
+        itemUseCursors = CreatAttackRange(item.m_UseRenge);
+        curHoldItem = item;
+        battleState = BattleStat.PlayerItemTargetSelect;
 
+    }
+    #endregion
+
+    #region 四种行动模式
+    //输入:无
+    //效果:攻击模式进入攻击目标选择阶段，物品模式打开物品的选择菜单,等待模式结束该回合，技能模式选择技能的目标
+    //输出:无
     public void Action_Attack()
     {
         Debug.Log("Action_Attack");
         battleState = BattleStat.PlayerAttackSelect;
         actionSelectGameObject.SetActive(false);
-        CreatAttackRenge(curSelectClass.Weapon.attackRenge);
+        attackCursors = CreatAttackRange(curSelectClass.Weapon.attackRenge);
     }
     public void Action_Item()
     {
-        Debug.Log("Action_Item");
         battleState = BattleStat.PlayerItemSelect;
         actionSelectGameObject.SetActive(false);
         //TO DO:显示物品菜单
+        if (itemSelectGameObject.activeSelf == false)
+            SetItemSelecterActive();
+
+        itemSelectGameObject.GetComponent<ItemSelectPanel>().InitItemButtons(curSelectClass);
     }
     public void Action_Wait()
     {
@@ -339,6 +532,13 @@ public class BattleManager : MonoBehaviour
         actionSelectGameObject.SetActive(false);
         //TO DO:显示技能选择栏
     }
+
+    #endregion
+
+    #region 显示行动选择页面
+    //输入:无
+    //效果:显示行动选择页面，并且将它移动到行动的角色附近
+    //输出:无
     public void SetActionSelecterActive()
     {
         actionSelectGameObject.SetActive(true);
@@ -349,61 +549,88 @@ public class BattleManager : MonoBehaviour
         Vector3 finalPos = WorldToUGUI(uiVector);
         actionSelectGameObject.transform.localPosition = finalPos;
     }
+    #endregion
+    private void SetItemSelecterActive()
+    {
+        itemSelectGameObject.SetActive(true);
+        Vector3 screenPos = Camera.main.ScreenToWorldPoint(new Vector3(Screen.width / 2, Screen.height / 2, 0));
+        Vector3 characterPos = curSelectClass.m_Position;
+        Vector3 uiVector = (characterPos - 2 * Vector3.Normalize(characterPos - screenPos));
+        Vector3 finalPos = WorldToUGUI(uiVector);
+        itemSelectGameObject.transform.localPosition = finalPos;
+    }
 
     public void GetCurSrpgMoveRenge()
     {
         pathFinder.CreatMoveRenge(curSelectClass);
     }
 
-    public void CreatAttackRenge(int[][] weaponAttackRenge)
+    #region 创建攻击范围
+    //输入:攻击范围数组
+    //效果:使用攻击范围数组在目标位置创建攻击范围Cursor
+    //输出:创建完毕的范围Cursor
+    public Dictionary<Vector3Int, GameObject> CreatAttackRange(int[][] weaponAttackRange)
     {
-        attackCursors = new Dictionary<Vector3Int, GameObject>();
-        int n = weaponAttackRenge.Length;
+        var Cursors = new Dictionary<Vector3Int, GameObject>();
+        int n = weaponAttackRange.Length;
         int center = n / 2;
         for (int i = 0; i < n; i++)
         {
             for(int j = 0; j < n; j++)
             {
                 Vector3Int cursorPos = new Vector3Int(curSelectClass.m_Position.x + (i - center),curSelectClass.m_Position.y + (center - j),0);
-                if(weaponAttackRenge[i][j] == 1)
-                    CreatAttackCursor(cursorPos);
+                if(weaponAttackRange[i][j] == 1)
+                    CreatAttackCursor(cursorPos,Cursors);
             }
         }
-    }
 
-    public void CreatAttackCursor(Vector3Int attackCursorPos)
+        return Cursors;
+    }
+    #endregion
+
+    public void CreatAttackCursor(Vector3Int attackCursorPos, Dictionary<Vector3Int, GameObject> cursors)
     {
         var attackCursorObject = Instantiate(attackCursorPrefab, mapObjectBase.transform);
         attackCursorObject.transform.position = attackCursorPos;
-        attackCursors.Add(attackCursorPos, attackCursorObject);
+        cursors.Add(attackCursorPos, attackCursorObject);
     }
 
-    public void ClearAttackCursor()
+    #region 清除所有的Cursor
+    //输入:需要被删除的Cursor
+    //效果:删除传入的Cursor列表
+    //输出:无
+    public void ClearAttackCursor(Dictionary<Vector3Int,GameObject> cursors)
     {
-        if (attackCursors != null)
+        if (cursors != null)
         {
-            foreach (var kvp in attackCursors)
+            foreach (var kvp in cursors)
             {
                 DestroyImmediate(kvp.Value.gameObject);
             }
-            attackCursors.Clear();
+            cursors.Clear();
         }
     }
+    #endregion
 
+    #region 检测战斗是否结束
+    //输入:无
+    //效果:在单位死亡，回合数变动的时候检测是否达成了目标，如果是就进入输/赢阶段
+    //输出:无
     public void CheckBattleEnd()
     {
         //根据当前的关卡目标，判断当前的关卡战斗是否结束
         switch (curLevelGoal.winTarget)
         {
             case WinTarget.Kill_All_Enemy:
-                if(scenceManager.enemyClasses.Count <= 0)
+                if(ScenceManager.instance.enemyClasses.Count <= 0)
                 {
                     battleState = BattleStat.PlayerWinEnd;
                     //TO DO:战斗结束，玩家胜利
+                    Debug.Log("Win");
                 }
                 break;
             case WinTarget.Kill_Target_Enemy:
-                if (!scenceManager.enemyClasses.Contains(curLevelGoal.winClassTarget))
+                if (!ScenceManager.instance.enemyClasses.Contains(curLevelGoal.winClassTarget))
                 {
                     battleState = BattleStat.PlayerWinEnd;
                 }
@@ -419,14 +646,15 @@ public class BattleManager : MonoBehaviour
         switch (curLevelGoal.loseTarget)
         {
             case LoseTarget.All_Class_Dead:
-                if(scenceManager.playerClasses.Count <= 0)
+                if(ScenceManager.instance.playerClasses.Count <= 0)
                 {
                     battleState = BattleStat.PlayerLoseEnd;
+                    Debug.Log("Player lose");
                     //TO DO:战斗结束，玩家失败
                 }
                 break;
             case LoseTarget.Target_Killed:
-                if (scenceManager.allyClasses.Contains(curLevelGoal.loseClassTarget))
+                if (ScenceManager.instance.allyClasses.Contains(curLevelGoal.loseClassTarget))
                 {
                     battleState = BattleStat.PlayerLoseEnd;
                 }
@@ -439,5 +667,7 @@ public class BattleManager : MonoBehaviour
         }
          
     }
+    #endregion
+
 
 }

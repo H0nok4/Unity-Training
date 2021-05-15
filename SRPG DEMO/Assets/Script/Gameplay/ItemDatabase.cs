@@ -36,6 +36,7 @@ public class ItemDatabase
             "IronSword",
             new SrpgWeapon()
             {
+                //TO DO:添加sprite
                 weaponName = "IronSword",
                 weaponDes = "a sword is made of iron",
                 attack = 7,

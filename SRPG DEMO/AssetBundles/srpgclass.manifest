@@ -1,0 +1,37 @@
+ManifestFileVersion: 0
+CRC: 3802681175
+Hashes:
+  AssetFileHash:
+    serializedVersion: 2
+    Hash: b5d6b0f7c22f6a6fed9fee4008a990af
+  TypeTreeHash:
+    serializedVersion: 2
+    Hash: 1815d546a23844ec04d88181ed8d6f6f
+HashAppended: 0
+ClassTypes:
+- Class: 1
+  Script: {instanceID: 0}
+- Class: 4
+  Script: {instanceID: 0}
+- Class: 21
+  Script: {instanceID: 0}
+- Class: 28
+  Script: {instanceID: 0}
+- Class: 48
+  Script: {instanceID: 0}
+- Class: 114
+  Script: {fileID: 11500000, guid: c0cae851d64cef84cb89f6ff06cf8cc2, type: 3}
+- Class: 114
+  Script: {fileID: 11500000, guid: 913013636479e774db9c63751340b273, type: 3}
+- Class: 114
+  Script: {fileID: 11500000, guid: 5aedd8f5535f30548897901afa9227a9, type: 3}
+- Class: 115
+  Script: {instanceID: 0}
+- Class: 212
+  Script: {instanceID: 0}
+- Class: 213
+  Script: {instanceID: 0}
+SerializeReferenceClassIdentifiers: []
+Assets:
+- Assets/Prefabs/GamePlay/Footman.prefab
+Dependencies: []

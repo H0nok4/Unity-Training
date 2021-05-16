@@ -11,8 +11,8 @@ $Start;
 		option1 shut up and do my work;
 		option2 say fk you self to him;
 	endoption;
-	if option == 1 goto #End;
-	if option == 2 goto #fight;
+	if option1 == 1 goto #End;
+	if option2 == 1 goto #fight;
 	goto #fight;
 
 	#fight;

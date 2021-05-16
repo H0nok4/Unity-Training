@@ -1,0 +1,37 @@
+$Start;
+	text down footman1;
+		ohhh,Is so boring;
+		how do you do;
+	endtext;
+	text down footman2;
+		shut up andn do you work;
+	endtext;
+
+	option;
+		option1 shut up and do my work;
+		option2 say fk you self to him;
+	endoption;
+	if option == 1 goto #End;
+	if option == 2 goto #fight;
+	goto #fight;
+
+	#fight;
+	text down footman1;
+		go fk youself;
+	endtext;
+	
+	text down footman2;
+		how dare you;
+	endtext;
+
+	text mid none;
+		fight start;
+	endtext;
+
+	goto #end;
+
+	#end;
+	text down test;
+		test end;
+	endtext;
+$End;

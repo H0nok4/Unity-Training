@@ -34,7 +34,9 @@ public class TextCommand : ScenarioCommand
     public override void Run()
     {
         //TO DO:播放文本
-        Debug.Log("Show Text");
+        //Debug.Log("Show Text");
+        GameDirecter.instance.state = ScenarioPlayStatus.waitTextWriteDone;
+        UIManager.instance.WritingText(parameter[0], parameter[1], parameter[2],true);
     }
 }
 
@@ -49,7 +51,24 @@ public class IfGotoCommand : ScenarioCommand
 
     public override void Run()
     {
-        Debug.Log("IF true goto");
+        var conditionValue = GameDirecter.instance.GetValueFromHeap(parameter[0]);
+        if (conditionValue != -1)
+        {
+            switch (parameter[1])
+            {
+                case "==":
+                    if(conditionValue == int.Parse(parameter[2]))
+                    {
+                        GameDirecter.instance.curCommandPosition = GameDirecter.instance.GetValueFromHeap(parameter[3]);
+                        GameDirecter.instance.NextCommand();
+                        Debug.Log($"True!Jump to {parameter[3]}");
+                        return;
+                    }
+                    break;
+                    
+            }
+        }
+        GameDirecter.instance.NextCommand();
     }
 }
 
@@ -64,7 +83,8 @@ public class GotoCommand : ScenarioCommand
 
     public override void Run()
     {
-        base.Run();
+        GameDirecter.instance.curCommandPosition = GameDirecter.instance.GetValueFromHeap(parameter[0]);
+        GameDirecter.instance.NextCommand();
     }
 }
 
@@ -79,7 +99,7 @@ public class FlagCommand : ScenarioCommand
 
     public override void Run()
     {
-        GameDirecter.instance.ScenarioHeap.Add(parameter[0], int.Parse(parameter[1]));
+        GameDirecter.instance.AddVariable(parameter[0], int.Parse(parameter[1]));
     }
 }
 
@@ -94,8 +114,11 @@ public class OptionCommand : ScenarioCommand
 
     public override void Run()
     {
-        for(int i = 0; i < parameter.Length; i++)
+        GameDirecter.instance.state = ScenarioPlayStatus.waitPlayerSelectOption;
+        for(int i = 0; i < parameter.Length - 1; i+=2)
         {
+            UIManager.instance.SetOptionBox(parameter[i], parameter[i + 1]);
+            GameDirecter.instance.AddVariable(parameter[i], 0);
             /*奇数的变量将加到堆栈中，偶数的Text将添加到UIManager的对话栏，
              * 创建一个新选项并且显示Text文字，并且也绑定上变量，
              * 在点击的时候改变变量的数值，留作后面ifgoto判断*/
@@ -115,7 +138,7 @@ public class StartCommand : ScenarioCommand
 
     public override void Run()
     {
-        base.Run();
+        Debug.Log("Start");
     }
 }
 
@@ -130,6 +153,6 @@ public class EndCommand : ScenarioCommand
 
     public override void Run()
     {
-        
+        GameDirecter.instance.EndPlayScenario();
     }
 }

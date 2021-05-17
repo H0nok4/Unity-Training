@@ -2,13 +2,14 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum GameStat
+public enum GameState
 {
-    InBattleScence,
+    InBattleScence,PlayScenario
 }
 public class GameManager : MonoBehaviour
 {
-    public GameStat gameStat;
+    public GameState gameState;
+    public GameState preGameState;
     public static GameManager instance;
     public BattleManager battleManager;
     public bool isGameStop = false;
@@ -36,10 +37,26 @@ public class GameManager : MonoBehaviour
 
     private void Update()
     {
-        if(gameStat == GameStat.InBattleScence)
+        if(gameState == GameState.InBattleScence)
         {
             battleManager.HandleUpdate();
             MapManager.instance.HandleUpdate();
+        }else if(gameState == GameState.PlayScenario)
+        {
+            GameDirecter.instance.HandleUpdate();
         }
+    }
+
+    public void SwitchGameState(GameState curState)
+    {
+        preGameState = gameState;
+        gameState = curState;
+    }
+
+    public void ReverseGameState()
+    {
+        GameState tempState = gameState;
+        gameState = preGameState;
+        preGameState = tempState;
     }
 }

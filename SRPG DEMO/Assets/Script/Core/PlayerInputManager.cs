@@ -5,6 +5,22 @@ using UnityEngine.Tilemaps;
 
 public class PlayerInputManager : MonoBehaviour
 {
+    public static PlayerInputManager instance;
+    private void Awake()
+    {
+        if(instance == null)
+        {
+            instance = this;
+        }
+        else
+        {
+            if(instance != null)
+            {
+                Destroy(gameObject);
+            }
+        }
+    }
+
     public bool CanProcessInput()
     {
         return !GameManager.instance.isGameStop;

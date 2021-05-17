@@ -68,8 +68,15 @@ public class TextScript
                     {
                         temp.Add(texts[i]);
                     }
-                    TextCommand textCommand = new TextCommand(temp.ToArray());
-                    commands.Add(textCommand);
+                    for(int j = 2; j < temp.Count; j++)
+                    {
+                        List<string> tempParameter = new List<string>();
+                        tempParameter.Add(temp[0]);
+                        tempParameter.Add(temp[1]);
+                        tempParameter.Add(temp[j]);
+                        TextCommand textCommand = new TextCommand(tempParameter.ToArray());
+                        commands.Add(textCommand);
+                    }
                     break;
                 case s_OptionCommand:
                     List<string> optionCommandText = new List<string>();
@@ -126,12 +133,12 @@ public class TextScript
     {
         for(int i = 0;i<commands.Count;i++)
         {
-            
-            Debug.LogError($"Command[{i}] = " + commands[i].type);
-            if(commands[i].type == ScenarioCommandType.flagCommand)
+            Debug.Log($"Command[{i}] = " + commands[i].type);
+            for(int j = 0; j < commands[i].parameter.Length; j++)
             {
-                Debug.Log($"{commands[i].parameter[0].ToString()} position = " + commands[i].parameter[1].ToString());
+                Debug.Log($"Command[{i}].paramater[{j}] = " + commands[i].parameter[j]);
             }
+
         }
     }
 

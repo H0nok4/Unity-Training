@@ -1,6 +1,6 @@
 $Start;
 	text down footman1;
-		ohhh,Is so boring;
+		ohhh,Is so boring,Ay-ay-ay-ay-ay, what just happened!;
 		how do you do;
 	endtext;
 	text down footman2;
@@ -33,5 +33,10 @@ $Start;
 	#end;
 	text down test;
 		test end;
+	endtext;
+
+	text mid none;
+		footman2 is lose the battle;
+		footman1 is winner;
 	endtext;
 $End;

@@ -24,6 +24,14 @@ public class ItemDatabase
             armor.armorName = armor_Name;
         }
 
+        foreach(var kvp in Items_Dictionary)
+        {
+            var itemName = kvp.Key;
+            var item = kvp.Value;
+
+            item.m_ItemName = itemName;
+        }
+
         //序列化Test
         string jsonPath = "Assets/WeaponData/WeaponDataBase.json";
 
@@ -44,7 +52,7 @@ public class ItemDatabase
                 hitChance = 95,
                 attackRenge = new int[3][]{ new int[3] {0,1,0},new int[3] {1,0,1},new int[3] {0,1,0} },
                 maxUseTimes = 15,
-                /*onDamageTarget = (SrpgClass srpgClass) =>
+                onDamageTarget = (SrpgClassUnit srpgClass) =>
                 {
                     //附加固定伤害
                     srpgClass.CurHealth -= 4;
@@ -54,19 +62,19 @@ public class ItemDatabase
                     }
                     Debug.Log("more attack 4");
                 },
-                onDamageSelf = (SrpgClass srpgClass) =>
+                onDamageSelf = (SrpgClassUnit srpgClass) =>
                 {
                     //吸血2滴血
-                    if(srpgClass.CurHealth + 2 < srpgClass.classProperty[SrpgClassPropertyType.MaxHealth])
+                    if(srpgClass.CurHealth + 2 < srpgClass.maxHealth)
                     {
                         srpgClass.CurHealth += 2;
                     }
                     else
                     {
-                        srpgClass.CurHealth = srpgClass.classProperty[SrpgClassPropertyType.MaxHealth];
+                        srpgClass.CurHealth = srpgClass.maxHealth;
                     }
                 }
-                */
+                
             }
         },
         {
@@ -98,6 +106,24 @@ public class ItemDatabase
                 avoid = 20
             }
         }
+    };
+
+    public static Dictionary<string, SrpgUseableItem> Items_Dictionary { get; set; } = new Dictionary<string, SrpgUseableItem>()
+    {
+        {
+            "SmallPotion",
+            new SmallPotion()
+        },
+
+        { 
+            "Bandage",
+            new Bandage()
+        },
+
+        {
+            "Bomb",
+            new Bomb()
+        },
     };
 
 }

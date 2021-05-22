@@ -17,18 +17,18 @@ public class Footman_RunAway : AIState
     }
 
 
-    public override void Enter(SrpgClass srpgClass)
+    public override void Enter(SrpgClassUnit srpgClass)
     {
 
     }
 
-    public override IEnumerator Execute(SrpgClass srpgClass)
+    public override IEnumerator Execute(SrpgClassUnit srpgClass)
     {
         srpgClass.isRunningAI = true;
         var moveRenge = pathFinder.CreatAIMoveRenge(srpgClass);
 
 
-        if(srpgClass.CurHealth / (float)srpgClass.classProperty[SrpgClassPropertyType.MaxHealth] >= 0.4)
+        if(srpgClass.CurHealth / (float)srpgClass.maxHealth >= 0.4)
         {
             //TO DO：脱离危险，继续打击敌人
             srpgClass.StateMeching.ChangeCurState(Footman_Attack.Instance());
@@ -38,7 +38,7 @@ public class Footman_RunAway : AIState
         srpgClass.isRunningAI = false;
     }
 
-    public override void Exit(SrpgClass srpgClass)
+    public override void Exit(SrpgClassUnit srpgClass)
     {
 
     }

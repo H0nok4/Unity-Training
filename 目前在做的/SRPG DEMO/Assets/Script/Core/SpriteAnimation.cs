@@ -1,10 +1,12 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
 
+[Serializable]
 public class SpriteAnimator//自定义的Sprite Animator基类，用来控制各类角色的自定义动画。
 {
-    SpriteRenderer spriteRenderer;//sprite着色器，用来模拟Unity的Animator的工作原理
+    SpriteRenderer spriteRenderer;
     //工作原理：按照固定的时间间隔按顺序修改物体的Sprite，模拟动画的播放。
     //需要：一个顺序存放需要播放的动画的Sprte List  一个时间间隔 
     //额外设置 一个变量表示当前播放到哪一帧 一个变量表示当前经过的时间 经过的时间大于间隔后就播放到下一帧。

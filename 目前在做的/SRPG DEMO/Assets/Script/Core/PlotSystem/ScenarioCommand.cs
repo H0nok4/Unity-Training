@@ -115,6 +115,10 @@ public class OptionCommand : ScenarioCommand
     public override void Run()
     {
         GameDirecter.instance.state = ScenarioPlayStatus.waitPlayerSelectOption;
+        if(parameter.Length % 2 != 0)
+        {
+            Debug.LogError($"Error:Option Need a legalVar And legal text");
+        }
         for(int i = 0; i < parameter.Length - 1; i+=2)
         {
             UIManager.instance.SetOptionBox(parameter[i], parameter[i + 1]);

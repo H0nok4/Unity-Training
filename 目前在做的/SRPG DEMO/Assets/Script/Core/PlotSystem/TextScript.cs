@@ -60,18 +60,31 @@ public class TextScript
                     break;
                 case s_TextCommand:
                     List<string> temp = new List<string>();
+                    int startPosition = i;
                     for (int j = 1; j < codes.Length; j++)
                     {
                         temp.Add(codes[j]);
                     }
-                    while(texts[++i] != s_EndTextCommand)
+                    while(texts[++i] != s_EndTextCommand )
                     {
+                        if(i >= texts.Count - 1)
+                        {
+                            Debug.LogError($"Error:NoEndTextCommand ErrorPosition{startPosition}");
+                        }
                         temp.Add(texts[i]);
                     }
                     for(int j = 2; j < temp.Count; j++)
                     {
                         List<string> tempParameter = new List<string>();
-                        tempParameter.Add(temp[0]);
+                        if(temp[0] != "top" && temp[0] != "mid" && temp[0] != "down")
+                        {
+                            Debug.LogError($"Error:NoLegalPosition ErrorPosition = {startPosition}");
+                        }
+                        else
+                        {
+                            tempParameter.Add(temp[0]);
+                        }
+
                         tempParameter.Add(temp[1]);
                         tempParameter.Add(temp[j]);
                         TextCommand textCommand = new TextCommand(tempParameter.ToArray());

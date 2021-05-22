@@ -31,7 +31,7 @@ public class PathFinder : MonoBehaviour
         //TO DO:解决无法删除moveCursor的BUG；
 
     }
-    public Dictionary<Vector3Int,int> CreatAIMoveRenge(SrpgClass moveClass)
+    public Dictionary<Vector3Int,int> CreatAIMoveRenge(SrpgClassUnit moveClass)
     {
         Dictionary<Vector3Int,int> aIMoveCursors = new Dictionary<Vector3Int, int>();
         Vector3Int startPos = moveClass.m_Position;
@@ -75,7 +75,7 @@ public class PathFinder : MonoBehaviour
     #region 创建移动范围
     //输入：需要移动的角色，以角色为中心开始创建移动范围
     //输出：一个装有所有移动位置的字典，Key为坐标，Value为显示出来的Cursor
-    public Dictionary<Vector3Int,GameObject> CreatMoveRenge(SrpgClass moveClass)
+    public Dictionary<Vector3Int,GameObject> CreatMoveRenge(SrpgClassUnit moveClass)
     {
         moveCursors = new Dictionary<Vector3Int, GameObject>();
         Vector3Int startPos = moveClass.m_Position;
@@ -145,7 +145,7 @@ public class PathFinder : MonoBehaviour
         }
     }
 
-    public void DeleteAlreadyUseAIMoveCursors(Vector3Int curPosition,Dictionary<Vector3Int,int> aiMoveCursor)
+    private void DeleteAlreadyUseAIMoveCursors(Vector3Int curPosition,Dictionary<Vector3Int,int> aiMoveCursor)
     {
         if (ScenceManager.instance.mapObjectGameObjects != null)
         {
@@ -165,15 +165,7 @@ public class PathFinder : MonoBehaviour
         }
     }
 
-    public void DestroyAllMoveCursor()
-    {
-        foreach(var kvp in moveCursors)
-        {
-            Destroy(kvp.Value);
-        }
-    }
-
-    public CellData CreatTileData(Vector3Int pos,Tilemap srpgTile,int m_curCost)
+    private CellData CreatTileData(Vector3Int pos,Tilemap srpgTile,int m_curCost)
     {
         var cellData = new CellData(pos);
         var posTile = srpgTile.GetTile<SrpgTile>(pos);
@@ -182,35 +174,55 @@ public class PathFinder : MonoBehaviour
         return cellData;
     }
 
-    public CellData CreatAstarTileData(Vector3Int startPos,Vector3Int targetPos,Tilemap srpgTile,CellData parent = null)
+    private CellData CreatAstarTileData(Vector3Int startPos,Vector3Int targetPos,Tilemap srpgTile,CellData parent = null)
     {
 
         var cellData = new CellData(startPos);
         var posTile = srpgTile.GetTile<SrpgTile>(startPos);
         cellData.G = posTile.moveCost;
-        if (ScenceManager.instance.IsHaveTeleporter())
+        var startTeleporter = ScenceManager.instance.TryGetNearestTeleporter(startPos);
+        var endTeleporter = ScenceManager.instance.TryGetNearestTeleporter(targetPos);
+        if (startTeleporter != null && endTeleporter != null)
         {
             //如果场上存在传送器，看看能不能抄近道
             //D(x,y)为x点到y点的距离，T(x)为离x最近的传送器的坐标
             //H(x,y) = min(D(x,y), D(x,T(x)) + D(T(y),y) )
-            cellData.H = Mathf.Min(Distance(startPos, targetPos), Distance(startPos, ScenceManager.instance.TryGetNearestTeleporter(startPos).pos) + Distance(ScenceManager.instance.TryGetNearestTeleporter(targetPos).pos, targetPos));
+            cellData.H = Mathf.Min(Distance(startPos, targetPos), Distance(startPos, startTeleporter.pos) + Distance(endTeleporter.pos, targetPos));
         }
         else
         {
             //没有传送器，按部就班寻路
             cellData.H = Distance(startPos, targetPos);
         }
-        
 
 
-        if(parent != null)
+        if (parent != null)
         {
             cellData.parent = parent;
-            cellData.G = parent.G + posTile.moveCost;
+            cellData.G = (parent.G + Distance(parent.m_Position,startPos)) * posTile.moveCost;
         }
         cellData.F = cellData.G + cellData.H;
         return cellData;
     }
+    private CellData CreatAstarTileData(Vector3Int startPos,Tilemap srpgTile, CellData parent = null)
+    {
+
+        var cellData = new CellData(startPos);
+        var posTile = srpgTile.GetTile<SrpgTile>(startPos);
+        cellData.G = posTile.moveCost;
+        cellData.H = 0;
+
+
+        if (parent != null)
+        {
+            cellData.parent = parent;
+            cellData.G = (parent.G + Distance(parent.m_Position, startPos)) * posTile.moveCost;
+        }
+        cellData.F = cellData.G + cellData.H;
+        return cellData;
+    }
+
+
 
     public List<CellData> AstarCreatMovePath(Vector3Int startPos, Vector3Int targetPos)
     {
@@ -218,20 +230,17 @@ public class PathFinder : MonoBehaviour
             return new List<CellData>();
         //A*算法计算出一条路径，然后角色就能根据路径上的点到达目标位置。
         //List<CellData> openList = new List<CellData>();
-        PriorityQueue<CellData> openList = new PriorityQueue<CellData>(new SortByF(),false);
+        PriorityQueue<CellData> openList = new PriorityQueue<CellData>(new SortByF());
         List<CellData> closeList = new List<CellData>();
         
         openList.Enqueue(CreatAstarTileData(startPos, targetPos, MapManager.instance.tilemaps[1]));
+
+
         while (openList.Count > 0)
         {
             //var curCellData = openList[0];
             var curCellData = openList.Dequeue();
-            /*
-            foreach (var cD in openList)
-            {
-                curCellData = curCellData.F < cD.F ? curCellData : cD;
-            }
-            */
+            Debug.Log(curCellData.F);
 
             closeList.Add(curCellData);
             //openList.Remove(curCellData);
@@ -272,7 +281,6 @@ public class PathFinder : MonoBehaviour
                     {
                         openList.Enqueue(newCellData);
                     }
-                    openList.Enqueue(newCellData);
                 }
             }
         }
@@ -280,7 +288,7 @@ public class PathFinder : MonoBehaviour
         return CreatAstarResultPath(closeList);
     }
 
-    public List<CellData> CreatAstarResultPath(List<CellData> closeList)
+    private List<CellData> CreatAstarResultPath(List<CellData> closeList)
     {
         List<CellData> aStarResultCellData = new List<CellData>();
         var targetCellData = closeList[closeList.Count - 1];
@@ -294,7 +302,7 @@ public class PathFinder : MonoBehaviour
         return aStarResultCellData;
     }
 
-    public bool IsContainsCellData(List<CellData> cellDatas,CellData m_cellData)
+    private bool IsContainsCellData(List<CellData> cellDatas,CellData m_cellData)
     {
         foreach(var cD in cellDatas)
         {
@@ -303,19 +311,112 @@ public class PathFinder : MonoBehaviour
                 return true;
             }
         }
+
         return false;
     }
 
-    public bool IsContainsCellData(PriorityQueue<CellData> cellDatas, CellData m_cellData)
+    private bool IsContainsCellData(PriorityQueue<CellData> cellDatas, CellData m_cellData)
     {
 
         return cellDatas.Contains(m_cellData);
     }
 
-    public int Distance(Vector3Int x,Vector3Int y)
+    private int Distance(Vector3Int x,Vector3Int y)
     {
-        return Mathf.Abs(y.x - x.x) + Mathf.Abs(y.y - x.y);
+        return Mathf.Abs(x.x - y.x) + Mathf.Abs(x.y - y.y);
     }
+
+    #region dijkstra
+    public SrpgClassUnit DijsktraFindPlayerClass(Vector3Int startPos)
+    {
+
+        PriorityQueue<CellData> openList = new PriorityQueue<CellData>(new SortByF());
+        List<CellData> closeList = new List<CellData>();
+
+        openList.Enqueue(CreatDijkstraTileData(startPos,MapManager.instance.tilemaps[1]));
+
+
+        while (openList.Count > 0)
+        {
+
+            var curCellData = openList.Dequeue();
+            closeList.Add(curCellData);
+
+            foreach (var mD in moveDelta)
+            {
+                var newPostion = new Vector3Int(curCellData.m_Position.x + mD[0], curCellData.m_Position.y + mD[1], 0);
+                if (MapManager.instance.GetSrpgTilemapData(newPostion) != null)
+                {
+
+                    var newCellData = CreatDijkstraTileData(newPostion,MapManager.instance.GetSrpgTilemap(), curCellData);
+                    if (ScenceManager.instance.mapObjectGameObjects.ContainsKey(newCellData.m_Position))
+                    {
+                        var srpgClass = ScenceManager.instance.mapObjectGameObjects[newCellData.m_Position].GetComponent<SrpgClassUnit>();
+                        if(srpgClass != null)
+                        {
+                            if(srpgClass.classCamp == ClassCamp.ally || srpgClass.classCamp == ClassCamp.player)
+                            {
+                                return srpgClass;
+                            }
+                        }
+                    }
+
+
+
+                    if (!IsContainsCellData(openList, newCellData) && !IsContainsCellData(closeList, newCellData))
+                    {
+                        openList.Enqueue(newCellData);
+                    }
+                }
+
+            }
+            //抄传送门近道
+            if (ScenceManager.instance.interactiveObjectGameObjects.ContainsKey(curCellData.m_Position))
+            {
+                var teleporter = ScenceManager.instance.interactiveObjectGameObjects[curCellData.m_Position].gameObject.GetComponent<Teleporter>();
+                if (teleporter != null)
+                {
+                    var newCellData = CreatDijkstraTileData(teleporter.targetPos, MapManager.instance.GetSrpgTilemap(), curCellData);
+                    if (ScenceManager.instance.mapObjectGameObjects.ContainsKey(newCellData.m_Position))
+                    {
+                        var srpgClass = ScenceManager.instance.mapObjectGameObjects[newCellData.m_Position].GetComponent<SrpgClassUnit>();
+                        if (srpgClass != null)
+                        {
+                            if (srpgClass.classCamp == ClassCamp.ally || srpgClass.classCamp == ClassCamp.player)
+                            {
+                                return srpgClass;
+                            }
+                        }
+                    }
+                    if (!IsContainsCellData(openList, newCellData) && !IsContainsCellData(closeList, newCellData))
+                    {
+                        openList.Enqueue(newCellData);
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private CellData CreatDijkstraTileData(Vector3Int startPos, Tilemap srpgTile, CellData parent = null)
+    {
+        var cellData = new CellData(startPos);
+        var posTile = srpgTile.GetTile<SrpgTile>(startPos);
+        cellData.G = posTile.moveCost;
+        cellData.H = 0;
+
+
+        if (parent != null)
+        {
+            cellData.parent = parent;
+            cellData.G = (parent.G + Distance(parent.m_Position, startPos)) * posTile.moveCost;
+        }
+        cellData.F = cellData.G + cellData.H;
+        return cellData;
+    }
+    #endregion
+
     #endregion
 }
 
@@ -323,6 +424,16 @@ public class SortByF : IComparer<CellData>
 {
     public int Compare(CellData x, CellData y)
     {
-        return x.F.CompareTo(y.F);
+        return y.F.CompareTo(x.F);
     }
+}
+
+public class SortByG : IComparer<CellData>
+{
+    public int Compare(CellData x, CellData y)
+    {
+        return x.G.CompareTo(y.G);
+    }
+
+
 }

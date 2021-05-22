@@ -38,7 +38,7 @@ public class GameDirecter : MonoBehaviour
     }
     private void Start()
     {
-        if (StartScenario != null)
+        if (StartScenario != string.Empty)
             StartCoroutine(StartPlayScenario(StartScenario));
 
     }

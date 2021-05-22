@@ -6,7 +6,7 @@ public class ItemSelectPanel : MonoBehaviour
 {
     [SerializeField] ItemSelectButton[] itemButtons;
     
-    public void InitItemButtons(SrpgClass curClass)
+    public void InitItemButtons(SrpgClassUnit curClass)
     {
         Debug.Log(curClass.items.Count);
         for(int i = 0; i < curClass.items.Count; i++)

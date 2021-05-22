@@ -18,16 +18,16 @@ public class SmallPotion : SrpgUseableItem
     }
 
 
-    public override void Execute(SrpgClass srpgClass)
+    public override void Execute(SrpgClassUnit srpgClass)
     {
 
-        if(srpgClass.CurHealth / (float)srpgClass.classProperty[SrpgClassPropertyType.MaxHealth] <= 0.65f)
+        if(srpgClass.CurHealth / (float)srpgClass.maxHealth <= 0.65f)
         {
-            srpgClass.CurHealth += (int)(srpgClass.classProperty[SrpgClassPropertyType.MaxHealth] * 0.35f);
+            srpgClass.CurHealth += (int)(srpgClass.maxHealth * 0.35f);
         }
         else
         {
-            srpgClass.CurHealth = srpgClass.classProperty[SrpgClassPropertyType.MaxHealth];
+            srpgClass.CurHealth = srpgClass.maxHealth;
         }
     }
 }
@@ -50,16 +50,16 @@ public class Bandage : SrpgUseableItem
         m_Des = "Can healer target 25% maxHP";
     }
 
-    public override void Execute(SrpgClass srpgClass)
+    public override void Execute(SrpgClassUnit srpgClass)
     {
 
-        if (srpgClass.CurHealth / (float)srpgClass.classProperty[SrpgClassPropertyType.MaxHealth] <= 0.75f)
+        if (srpgClass.CurHealth / (float)srpgClass.maxHealth <= 0.75f)
         {
-            srpgClass.CurHealth += (int)(srpgClass.classProperty[SrpgClassPropertyType.MaxHealth] * 0.25f);
+            srpgClass.CurHealth += (int)(srpgClass.maxHealth * 0.25f);
         }
         else
         {
-            srpgClass.CurHealth = srpgClass.classProperty[SrpgClassPropertyType.MaxHealth];
+            srpgClass.CurHealth = srpgClass.maxHealth;
         }
     }
 }
@@ -87,7 +87,7 @@ public class Bomb : SrpgUseableItem
 
 
 
-    public override void Execute(SrpgClass srpgClass)
+    public override void Execute(SrpgClassUnit srpgClass)
     {
         int damage = UnityEngine.Random.Range(20, 50);
         srpgClass.ChangeHealth(damage);

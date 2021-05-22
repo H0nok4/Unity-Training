@@ -12,7 +12,7 @@ public class BattleCursorClassUI : MonoBehaviour
     public Slider classHPSlider;
     public TMP_Text classHPText;
 
-    public void UpdateUI(SrpgClass srpgClass)
+    public void UpdateUI(SrpgClassUnit srpgClass)
     {
         if(srpgClass != null)
         {
@@ -21,7 +21,7 @@ public class BattleCursorClassUI : MonoBehaviour
 
             //TO DO:添加Class头像 classImage =
             className.text = srpgClass.classType.ToString();
-            classHPSlider.maxValue = srpgClass.classProperty[SrpgClassPropertyType.MaxHealth];
+            classHPSlider.maxValue = srpgClass.maxHealth;
             classHPSlider.value = srpgClass.CurHealth;
             classHPText.text = srpgClass.CurHealth.ToString();
         }

@@ -8,9 +8,9 @@ public class AIStateMeching : MonoBehaviour
     public AIState globalState;
     public AIState curState;
     public AIState preState;
-    public SrpgClass srpgClass;
+    public SrpgClassUnit srpgClass;
 
-    public AIStateMeching(SrpgClass srpgClass)
+    public AIStateMeching(SrpgClassUnit srpgClass)
     {
         this.srpgClass = srpgClass;
         curState = null;
@@ -18,7 +18,7 @@ public class AIStateMeching : MonoBehaviour
         globalState = null;
     }
 
-    public void InitStateMeching(SrpgClass srpgClass)
+    public void InitStateMeching(SrpgClassUnit srpgClass)
     {
         this.srpgClass = srpgClass;
         curState = null;

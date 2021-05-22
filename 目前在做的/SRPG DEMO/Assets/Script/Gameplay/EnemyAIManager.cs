@@ -23,7 +23,7 @@ public class EnemyAIManager : MonoBehaviour
 
     }
 
-    public SrpgClass FindActionAIClass()
+    public SrpgClassUnit FindActionAIClass()
     {
         foreach(var aiClass in scenceManager.enemyClasses)
         {
@@ -36,7 +36,7 @@ public class EnemyAIManager : MonoBehaviour
         return null;
     }
 
-    IEnumerator RunAITurn(SrpgClass actionAIClass)
+    IEnumerator RunAITurn(SrpgClassUnit actionAIClass)
     {
         if (actionAIClass == null) yield break;
         isAIRunning = true;

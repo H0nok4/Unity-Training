@@ -13,6 +13,6 @@ public class SrpgWeapon : item
     public int hitChance;
     public int[][] attackRenge;
     public int maxUseTimes;
-    public Action<SrpgClass> onDamageTarget;
-    public Action<SrpgClass> onDamageSelf;
+    public Action<SrpgClassUnit> onDamageTarget;
+    public Action<SrpgClassUnit> onDamageSelf;
 }

@@ -8,7 +8,7 @@ public class AttackButton : Button
     
     public override void OnPointerClick(PointerEventData eventData)
     {
-        GameObject.Find("GameManager").GetComponent<BattleManager>().Action_Attack();
+        BattleManager.instance.Action_Attack();
     }
 
 }

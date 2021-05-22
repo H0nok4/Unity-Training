@@ -7,10 +7,10 @@ using System;
 public class ScenceManager : MonoBehaviour
 {
     #region 成员变量
-    public List<SrpgClass> playerClasses;
-    public List<SrpgClass> enemyClasses;
-    public List<SrpgClass> allyClasses;
-    public List<SrpgClass> neutralClasses;
+    public List<SrpgClassUnit> playerClasses;
+    public List<SrpgClassUnit> enemyClasses;
+    public List<SrpgClassUnit> allyClasses;
+    public List<SrpgClassUnit> neutralClasses;
     public Dictionary<Vector3Int,GameObject> mapObjectGameObjects;//地图Objects
     public Dictionary<Vector3Int, GameObject> interactiveObjectGameObjects;//可互动的Objects
     public UnityAction onObjectUnregister;
@@ -104,19 +104,19 @@ public class ScenceManager : MonoBehaviour
 
     }
 
-    public SrpgClass GetClassInVector3Int(Vector3Int classPos)
+    public SrpgClassUnit GetClassInVector3Int(Vector3Int classPos)
     {
         if (mapObjectGameObjects.ContainsKey(classPos))
-            return mapObjectGameObjects[classPos].GetComponent<SrpgClass>();
+            return mapObjectGameObjects[classPos].GetComponent<SrpgClassUnit>();
         else
             return null;
     }
 
     public void InitClass()
     {
-        foreach(var Class in playerClasses)
+        for(int i = 0;i<PlayerData.instance.playerBattleClasses.Count;i++)
         {
-            Class.InitClass();
+            playerClasses[i].InitClass(PlayerData.instance.playerBattleClasses[i]);
         }
         foreach (var Class in enemyClasses)
         {
@@ -141,7 +141,7 @@ public class ScenceManager : MonoBehaviour
         destroyMapObject.OnDispawn();
     }
 
-    public void UnRegisterSRPGClass(SrpgClass srpgClass)
+    public void UnRegisterSRPGClass(SrpgClassUnit srpgClass)
     {
         if (playerClasses.Contains(srpgClass))
         {
@@ -195,10 +195,11 @@ public class ScenceManager : MonoBehaviour
             if(teleporter != null)
             {
                 int dis = Math.Abs(teleporter.Pos.x - pos.x) + Math.Abs(teleporter.pos.y - pos.y);
-                if(dis <= result)
+                if(dis < result)
                 {
                     result = dis;
                     tempTeleporter = teleporter;
+
                 }
 
             }

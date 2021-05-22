@@ -17,12 +17,12 @@ public class Command
 
 public class MoveCommand:Command
 {
-    public SrpgClass srpgClass;
+    public SrpgClassUnit srpgClass;
     public Vector3Int prePos;
     public Vector3Int targetPos;
     public float preMoveX;
     public float preMoveY;
-    public MoveCommand(SrpgClass srpgClass,Vector3Int curPos,Vector3Int targetPos)
+    public MoveCommand(SrpgClassUnit srpgClass,Vector3Int curPos,Vector3Int targetPos)
     {
         this.srpgClass = srpgClass;
         this.prePos = curPos;
@@ -34,7 +34,7 @@ public class MoveCommand:Command
     public override void Execute()
     {
         //StartCoroutine(curSelectClass.StartPathMove(pathFinder.AstarCreatMovePath(curSelectClass.m_Position, cursorPosition)));
-        var movePath = GameObject.Find("GameManager").GetComponent<PathFinder>().AstarCreatMovePath(prePos, targetPos);
+        var movePath = GameObject.Find("BattleManager").GetComponent<PathFinder>().AstarCreatMovePath(prePos, targetPos);
         srpgClass.MoveTo(movePath);
     }
 
@@ -45,16 +45,16 @@ public class MoveCommand:Command
         srpgClass.transform.position = prePos;
         srpgClass.animator.moveX = preMoveX;
         srpgClass.animator.moveY = preMoveY;
-        GameObject.Find("GameManager").GetComponent<ScenceManager>().UpdateMapObjectPosition();
+        GameObject.Find("BattleManager").GetComponent<ScenceManager>().UpdateMapObjectPosition();
     }
 }
 
 public class AttackCommand:Command
 {
-    public SrpgClass attacker;
-    public SrpgClass defender;
+    public SrpgClassUnit attacker;
+    public SrpgClassUnit defender;
     public DamageDetail damageDetail;
-    public AttackCommand(SrpgClass attacker,SrpgClass defender)
+    public AttackCommand(SrpgClassUnit attacker,SrpgClassUnit defender)
     {
         this.attacker = attacker;
         this.defender = defender;
@@ -82,8 +82,8 @@ public class AttackCommand:Command
 public class ItemUseCommand : Command
 {
     public SrpgUseableItem m_item;
-    public SrpgClass m_target;
-    public ItemUseCommand(SrpgUseableItem item,SrpgClass target) {
+    public SrpgClassUnit m_target;
+    public ItemUseCommand(SrpgUseableItem item,SrpgClassUnit target) {
         m_item = item;
         m_target = target;
     }

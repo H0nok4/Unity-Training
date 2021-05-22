@@ -1,16 +1,12 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public enum FaceDirection { Up, Down, Left, Right }
+[Serializable]
 public class ClassAnimator : MonoBehaviour//角色自定义动画播放器
 {
-    //这里用来储存所需要的sprite List，对应不同的自定义动画。
-    [SerializeField] List<Sprite> walkDownSprites;
-    [SerializeField] List<Sprite> walkUpSprites;
-    [SerializeField] List<Sprite> walkLeftSprites;
-    [SerializeField] List<Sprite> walkRightSprites;
-
     //
     public float moveX { get; set; }
     public float moveY { get; set; }
@@ -31,14 +27,14 @@ public class ClassAnimator : MonoBehaviour//角色自定义动画播放器
 
     [SerializeField] FaceDirection defaultDirection = FaceDirection.Down;//默认朝向，默认为下
 
-    private void Start()
+    public void InitAnimator(ClassInfo classInfo)
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
         //初始化该角色所拥有的各个动画
-        walkDownAnim = new SpriteAnimator(walkDownSprites, spriteRenderer);
-        walkUpAnim = new SpriteAnimator(walkUpSprites, spriteRenderer);
-        walkLeftAnim = new SpriteAnimator(walkLeftSprites, spriteRenderer);
-        walkRightAnim = new SpriteAnimator(walkRightSprites, spriteRenderer);
+        walkDownAnim = new SpriteAnimator(classInfo.walkDownSprites, spriteRenderer);
+        walkUpAnim = new SpriteAnimator(classInfo.walkUpSprites, spriteRenderer);
+        walkLeftAnim = new SpriteAnimator(classInfo.walkLeftSprites, spriteRenderer);
+        walkRightAnim = new SpriteAnimator(classInfo.walkRightSprites, spriteRenderer);
 
         SetFaceDirection(defaultDirection);
         currentAnim = walkDownAnim;//初始默认的动画设置

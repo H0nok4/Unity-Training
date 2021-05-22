@@ -16,9 +16,9 @@ public class MapManager : MonoBehaviour
 
     private void Start()
     {
-        scenceManager = GameObject.FindGameObjectWithTag("GameManager").GetComponent<ScenceManager>();
-        playerInputManager = GameObject.FindGameObjectWithTag("GameManager").GetComponent<PlayerInputManager>();
-        pathFinder = GameObject.FindGameObjectWithTag("GameManager").GetComponent<PathFinder>();
+        scenceManager = ScenceManager.instance;
+        playerInputManager = GameObject.Find("BattleManager").GetComponent<PlayerInputManager>();
+        pathFinder = GameObject.Find("BattleManager").GetComponent<PathFinder>();
     }
 
     public static MapManager instance;
@@ -44,7 +44,7 @@ public class MapManager : MonoBehaviour
         CheckMapObjectOnPlayerCursorPosition();
     }
 
-    public Dictionary<Vector3Int,GameObject> GetSrpgMoveCursor(SrpgClass srpgClass)
+    public Dictionary<Vector3Int,GameObject> GetSrpgMoveCursor(SrpgClassUnit srpgClass)
     {
         return pathFinder.CreatMoveRenge(srpgClass);
     }

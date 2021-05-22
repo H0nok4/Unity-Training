@@ -19,26 +19,24 @@ public class Footman_Attack : AIState
     }
 
 
-    public override void Enter(SrpgClass srpgClass)
+    public override void Enter(SrpgClassUnit srpgClass)
     {
          
     }
 
-    public override IEnumerator Execute(SrpgClass srpgClass)
+    public override IEnumerator Execute(SrpgClassUnit srpgClass)
     {
         Debug.LogWarning("Start");
         srpgClass.isRunningAI = true;
         var moveRenge =  pathFinder.CreatAIMoveRenge(srpgClass);
         Debug.LogWarning("creat AI renge");
-        int minDis = int.MaxValue;
-        SrpgClass target = null;
-        foreach(var playerUnit in scenceManager.playerClasses)
-        {
-            if (target == null)
-                target = playerUnit;
-            target = Math.Abs(playerUnit.m_Position.x - srpgClass.m_Position.x) + Math.Abs(playerUnit.m_Position.y - srpgClass.m_Position.y) <= minDis ? playerUnit : target;
-            minDis = Math.Min(Math.Abs(playerUnit.m_Position.x - srpgClass.m_Position.x) + Math.Abs(playerUnit.m_Position.y - srpgClass.m_Position.y), minDis);
-        }
+
+        SrpgClassUnit target = null;
+        //Start 找到最近的目标
+        target = pathFinder.DijsktraFindPlayerClass(srpgClass.m_Position);
+        int minDis = Math.Abs(srpgClass.m_Position.x - target.m_Position.x) + Math.Abs(srpgClass.m_Position.y - target.m_Position.y);
+        Debug.Log(target.srpgclass.srpgClassName);
+        //End
         Debug.LogWarning("Find nearest target");
         var aStarPath = pathFinder.AstarCreatMovePath(srpgClass.m_Position, target.m_Position);
         foreach(var movePos in aStarPath)
@@ -88,7 +86,7 @@ public class Footman_Attack : AIState
                 {
                     //执行AttackOrder的命令，攻击目标
                     yield return srpgClass.StartPathMove(pathFinder.AstarCreatMovePath(srpgClass.m_Position, attackOrders[kvp.Key].pos));
-                    SrpgClass targetClass = scenceManager.mapObjectGameObjects[attackOrders[kvp.Key].targetPos].GetComponent<SrpgClass>();
+                    SrpgClassUnit targetClass = scenceManager.mapObjectGameObjects[attackOrders[kvp.Key].targetPos].GetComponent<SrpgClassUnit>();
                     //攻击目标
                     if (srpgClass.isMoveingPath != true)
                     {
@@ -109,7 +107,7 @@ public class Footman_Attack : AIState
             }
         }
             
-        if(srpgClass.CurHealth / (float)srpgClass.classProperty[SrpgClassPropertyType.MaxHealth] <= 0.3f)
+        if(srpgClass.CurHealth / (float)srpgClass.maxHealth <= 0.3f)
         {
             //TO DO:血量低下，改变状态为寻找治疗者或者使用加血道具
             srpgClass.StateMeching.ChangeCurState(Footman_RunAway.Instance());
@@ -119,7 +117,7 @@ public class Footman_Attack : AIState
         srpgClass.isRunningAI = false;
     }
 
-    public override void Exit(SrpgClass srpgClass)
+    public override void Exit(SrpgClassUnit srpgClass)
     {
 
     }
@@ -133,8 +131,25 @@ public class Footman_Attack : AIState
     {
 
     }
+    public SrpgClassUnit FindNearestPlayerUnit(Vector3Int startPos)
+    {
+        SrpgClassUnit target = null;
+        int minDis = int.MaxValue;
+        foreach(var playerUnit in scenceManager.playerClasses)
+        {
+            var path = pathFinder.AstarCreatMovePath(startPos, playerUnit.m_Position);
+            if(path[path.Count - 1].F < minDis)
+            {
+                minDis = path[path.Count - 1].F;
+                target = playerUnit;
+            }
+        }
 
-    public AttackOrder DetectingCanAttackPos(Vector3Int attackPos,int[][] attackRenge,SrpgClass attacker)
+        return target;
+    }
+
+
+    public AttackOrder DetectingCanAttackPos(Vector3Int attackPos,int[][] attackRenge,SrpgClassUnit attacker)
     {
         //发现该位置是个可互动位置，不要走到那个位置攻击，可能会踩到传送门传送走，很憨
         if (scenceManager.interactiveObjectGameObjects.ContainsKey(attackPos))
@@ -153,13 +168,13 @@ public class Footman_Attack : AIState
                     var targetPos = new Vector3Int(attackPos.x + (i - attackCenter), attackPos.y + (attackCenter - j), 0);
                     if (scenceManager.mapObjectGameObjects.ContainsKey(targetPos))
                     {
-                        if(scenceManager.mapObjectGameObjects[targetPos].GetComponent<SrpgClass>().classCamp != ClassCamp.enemy)
+                        if(scenceManager.mapObjectGameObjects[targetPos].GetComponent<SrpgClassUnit>().classCamp != ClassCamp.enemy)
                         {
                             int score = 0;  
-                            SrpgClass defender = scenceManager.mapObjectGameObjects[targetPos].GetComponent<SrpgClass>();
-                            int damage = (int)(attacker.classProperty[SrpgClassPropertyType.Attack] * (100 - defender.classProperty[SrpgClassPropertyType.Defense]) / 100f) * (1 + ( 1 - (int)(defender.CurHealth / (float)defender.classProperty[SrpgClassPropertyType.MaxHealth])));
+                            SrpgClassUnit defender = scenceManager.mapObjectGameObjects[targetPos].GetComponent<SrpgClassUnit>();
+                            int damage = (int)(attacker.attack * (100 - defender.defense) / 100f) * (1 + ( 1 - (int)(defender.CurHealth / (float)defender.maxHealth)));
                             score += damage;
-                            if (defender.CurHealth - attacker.classProperty[SrpgClassPropertyType.Attack] <= 0)
+                            if (defender.CurHealth - attacker.attack <= 0)
                             {
                                 score += 20;
                             }
@@ -204,7 +219,7 @@ public class SortByScore : IComparer<AttackOrder>
 {
     public int Compare(AttackOrder x, AttackOrder y)
     {
-        return x.score.CompareTo(y.score);
+        return y.score.CompareTo(x.score);
     }
 
 

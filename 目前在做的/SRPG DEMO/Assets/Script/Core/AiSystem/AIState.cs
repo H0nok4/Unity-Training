@@ -4,21 +4,21 @@ using UnityEngine;
 
 public class AIState
 {
-    public BattleManager battleManager = GameObject.Find("GameManager").GetComponent<BattleManager>();
-    public PathFinder pathFinder = GameObject.Find("GameManager").GetComponent<PathFinder>();
-    public ScenceManager scenceManager = GameObject.Find("GameManager").GetComponent<ScenceManager>();
+    public BattleManager battleManager = BattleManager.instance;
+    public PathFinder pathFinder = GameObject.Find("BattleManager").GetComponent<PathFinder>();
+    public ScenceManager scenceManager = ScenceManager.instance;
 
-    public virtual void Enter(SrpgClass sprgClass)
+    public virtual void Enter(SrpgClassUnit sprgClass)
     {
 
     }
 
-    public virtual IEnumerator Execute(SrpgClass sprgClass)
+    public virtual IEnumerator Execute(SrpgClassUnit sprgClass)
     {
         yield break;
     }
 
-    public virtual void Exit(SrpgClass srpgClass)
+    public virtual void Exit(SrpgClassUnit srpgClass)
     {
 
     }

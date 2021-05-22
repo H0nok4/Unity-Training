@@ -8,12 +8,12 @@ using UnityEngine;
 public class Goal : ScriptableObject
 {
     public WinTarget winTarget;
-    public SrpgClass winClassTarget;
+    public SrpgClassUnit winClassTarget;
     public int winTurns;
     //TO DO:可占领目标
 
     public LoseTarget loseTarget;
-    public SrpgClass loseClassTarget;
+    public SrpgClassUnit loseClassTarget;
     public int loseTurns;
     //TO DO:可占领目标
 }

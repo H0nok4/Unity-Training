@@ -7,6 +7,6 @@ public class ItemButton : Button
 {
     public override void OnPointerClick(PointerEventData eventData)
     {
-        GameObject.Find("GameManager").GetComponent<BattleManager>().Action_Item();
+        BattleManager.instance.Action_Item();
     }
 }

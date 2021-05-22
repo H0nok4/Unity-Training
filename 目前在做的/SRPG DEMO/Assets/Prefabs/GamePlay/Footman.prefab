@@ -288,7 +288,7 @@ GameObject:
   - component: {fileID: 6324656303444322401}
   - component: {fileID: 3596495444854321827}
   - component: {fileID: 6324656303444322404}
-  - component: {fileID: 5713168116249822008}
+  - component: {fileID: 1343520518}
   m_Layer: 0
   m_Name: Footman
   m_TagString: MapObject
@@ -384,7 +384,7 @@ MonoBehaviour:
   m_Level: 1
   curHealth: 0
   srpgClassProperty: {fileID: 11400000, guid: 477d6343374b5964a98765c56ff1b540, type: 2}
-  m_moveCost: 5
+  m_MovePoint: 0
   m_Weapon:
     sprite: {fileID: 0}
     weaponName: 
@@ -393,12 +393,41 @@ MonoBehaviour:
     magicAttack: 0
     hitChance: 0
     maxUseTimes: 0
+  m_Armor:
+    sprite: {fileID: 0}
+    armorName: 
+    armorDes: 
+    health: 0
+    defense: 0
+    magicDefense: 0
+    avoid: 0
   m_classAnimator: {fileID: 0}
   moveSpeed: 5
   highLightSprite: {fileID: 3015850749863418515}
   isActived: 0
   m_StateMeching: {fileID: 0}
   Inited: 0
+  srpgClass:
+    m_SrpgClassName: Mudeki
+    m_SrpgClassSprite: {fileID: 0}
+    m_ClassInfo: {fileID: 0}
+    m_Level: 99
+    m_Weapon:
+      sprite: {fileID: 0}
+      weaponName: 233
+      weaponDes: 233
+      attack: 100
+      magicAttack: 100
+      hitChance: 100
+      maxUseTimes: 15
+    m_Armor:
+      sprite: {fileID: 0}
+      armorName: 555
+      armorDes: 555
+      health: 200
+      defense: 100
+      magicDefense: 100
+      avoid: 50
 --- !u!114 &6324656303444322404
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -411,17 +440,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 913013636479e774db9c63751340b273, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  walkDownSprites:
-  - {fileID: -3691127795595480273, guid: db1e0ea0f0b67674c8d2199afc5ede6e, type: 3}
-  walkUpSprites:
-  - {fileID: 4588878461779508320, guid: db1e0ea0f0b67674c8d2199afc5ede6e, type: 3}
-  walkLeftSprites:
-  - {fileID: -3416724094096243559, guid: db1e0ea0f0b67674c8d2199afc5ede6e, type: 3}
-  walkRightSprites:
-  - {fileID: 7006663611895276051, guid: db1e0ea0f0b67674c8d2199afc5ede6e, type: 3}
   prvIsWalked: 0
   defaultDirection: 1
---- !u!114 &5713168116249822008
+--- !u!114 &1343520518
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -430,29 +451,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 6324656303444322400}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c0cae851d64cef84cb89f6ff06cf8cc2, type: 3}
+  m_Script: {fileID: 11500000, guid: 317df0442a365364a8209b91f854ccb3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_SpriteRenderer: {fileID: 0}
-  m_MapObjectType: 0
-  m_Position: {x: 0, y: 0, z: 0}
-  m_classType: 1
-  m_classCamp: 0
-  m_Level: 1
-  curHealth: 0
-  srpgClassProperty: {fileID: 11400000, guid: 477d6343374b5964a98765c56ff1b540, type: 2}
-  m_moveCost: 5
-  m_Weapon:
-    sprite: {fileID: 0}
-    weaponName: 
-    weaponDes: 
-    attack: 0
-    magicAttack: 0
-    hitChance: 0
-    maxUseTimes: 0
-  m_classAnimator: {fileID: 0}
-  moveSpeed: 1
-  highLightSprite: {fileID: 3015850749863418515}
-  isActived: 0
-  m_StateMeching: {fileID: 0}
-  Inited: 0
+  srpgClass: {fileID: 0}

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class BuffManager : MonoBehaviour
+public class BuffManager
 {
     //每个角色都有一个BuffManager实例
     private SrpgClassUnit m_Unit;

@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public enum ClassType
 {
@@ -35,6 +36,8 @@ public class SrpgClassUnit :  MapObject
     [SerializeField] AIStateMeching m_StateMeching;
     [SerializeField] List<SrpgUseableItem> m_Items;
     [SerializeField] BuffManager m_buffManager;
+    public Stack<Command> unitActionCommands;
+    private Slider m_HPSlider;
     #endregion
 
     #region 属性
@@ -181,6 +184,9 @@ public class SrpgClassUnit :  MapObject
         m_StateMeching = GetComponent<AIStateMeching>();
         m_StateMeching.InitStateMeching(this);
 
+        unitActionCommands = new Stack<Command>();
+        m_HPSlider = GetComponentInChildren<Slider>();
+        m_HPSlider.maxValue = maxHealth;
     }
     public void InitClass(SrpgClass srpgClass)
     {
@@ -203,6 +209,10 @@ public class SrpgClassUnit :  MapObject
         curHealth = m_Property[SrpgClassPropertyType.MaxHealth];
 
         m_Items = srpgClass.items;
+
+        unitActionCommands = new Stack<Command>();
+        m_HPSlider = GetComponentInChildren<Slider>();
+        m_HPSlider.maxValue = maxHealth;
     }
 
     #region 初始化属性
@@ -329,6 +339,7 @@ public class SrpgClassUnit :  MapObject
             //单位死亡，先隐藏角色，然后
             onDead();
         }
+        UpdateHPSlider();
     }
     #endregion
 
@@ -471,7 +482,10 @@ public class SrpgClassUnit :  MapObject
         //Temp:如果是玩家的话，会询问是否Interac。
         if(interactiveObject != null)
         {
-            interactiveObject.Interact(this);
+            //BUG:例如开启箱子之后，如果玩家一直撤回动作，开启的箱子和获得的物品不会撤回，应该用一个命令来开启箱子，在撤回的时候顺便UN_DO命令还原箱子和移除获得的物品
+            Command interactiveObjectCommand = new InteractObjectCommand(interactiveObject, this);
+            interactiveObjectCommand.Execute();
+            unitActionCommands.Push(interactiveObjectCommand);
         }
 
     }
@@ -488,10 +502,20 @@ public class SrpgClassUnit :  MapObject
         m_Items.Add(m_Item);
     }
 
+    public void RemoveItem(SrpgUseableItem m_Item)
+    {
+        m_Items.Remove(m_Item);
+    }
+
     private void onDead()
     {
         gameObject.SetActive(false);
         ScenceManager.instance.UnRegisterSRPGClass(this);
+    }
+
+    private void UpdateHPSlider()
+    {
+        m_HPSlider.value = curHealth;
     }
 
     #endregion

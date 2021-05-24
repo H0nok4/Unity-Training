@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class Chest : InteractiveObject
 {
+    
     [SerializeField] string itemName;
 
     public override void Interact(SrpgClassUnit srpgClass)
@@ -18,5 +19,11 @@ public class Chest : InteractiveObject
         }
 
         this.gameObject.SetActive(false);
+    }
+
+    public override void Un_Do(SrpgClassUnit unit)
+    {
+        this.gameObject.SetActive(true);
+        unit.RemoveItem(ItemDatabase.Items_Dictionary[itemName]);
     }
 }

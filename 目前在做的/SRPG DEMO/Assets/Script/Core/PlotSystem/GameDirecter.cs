@@ -36,12 +36,6 @@ public class GameDirecter : MonoBehaviour
         }
 
     }
-    private void Start()
-    {
-        if (StartScenario != string.Empty)
-            StartCoroutine(StartPlayScenario(StartScenario));
-
-    }
 
     public void HandleUpdate()
     {
@@ -88,6 +82,11 @@ public class GameDirecter : MonoBehaviour
     }
 
     #region 播放剧本
+    public void PlayScenario(string Scenario)
+    {
+        StartCoroutine(StartPlayScenario(Scenario));
+    }
+
     IEnumerator StartPlayScenario(string Scenario)
     {
         GameManager.instance.SwitchGameState(GameState.PlayScenario);

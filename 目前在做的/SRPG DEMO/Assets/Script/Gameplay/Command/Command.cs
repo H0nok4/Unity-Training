@@ -98,4 +98,24 @@ public class ItemUseCommand : Command
         
     }
 }
+
+public class InteractObjectCommand : Command
+{
+    public InteractiveObject m_InteractiveObject;
+    public SrpgClassUnit m_Unit;
+    public InteractObjectCommand(InteractiveObject iobject,SrpgClassUnit unit)
+    {
+        m_InteractiveObject = iobject;
+        m_Unit = unit;
+    }
+    public override void Execute()
+    {
+        m_InteractiveObject.Interact(m_Unit);
+    }
+
+    public override void Un_Do()
+    {
+        m_InteractiveObject.Un_Do(m_Unit);
+    }
+}
  

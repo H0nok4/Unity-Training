@@ -3,9 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-[CreateAssetMenu(menuName = "SRPG/Goal", fileName = "New Goal.asset")]
+
 [Serializable]
-public class Goal : ScriptableObject
+public class Goal
 {
     public WinTarget winTarget;
     public SrpgClassUnit winClassTarget;
@@ -16,6 +16,15 @@ public class Goal : ScriptableObject
     public SrpgClassUnit loseClassTarget;
     public int loseTurns;
     //TO DO:可占领目标
+}
+
+public class Goal_KillAllEnemy : Goal
+{
+    public Goal_KillAllEnemy()
+    {
+        winTarget = WinTarget.Kill_All_Enemy;
+        loseTarget = LoseTarget.All_Class_Dead;
+    }
 }
 
 

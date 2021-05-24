@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class InteractiveObject : MonoBehaviour
+public abstract class InteractiveObject : MonoBehaviour
 {
     public Vector3Int pos;
-    public virtual void Interact(SrpgClassUnit srpgClass)
+    public abstract void Interact(SrpgClassUnit srpgClass);
+
+    public virtual void Un_Do(SrpgClassUnit unit)
     {
-        Debug.LogError("Need Override Interact function");
+
     }
 }

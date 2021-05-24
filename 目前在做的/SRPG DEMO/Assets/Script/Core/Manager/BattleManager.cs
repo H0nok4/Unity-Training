@@ -23,7 +23,6 @@ public enum BattleStat
 public class BattleManager : MonoBehaviour
 {
     #region 成员变量
-    public int Turns = 0;
     public BattleStat battleState;
     public PlayerInputManager playerInputManager;
     public PathFinder pathFinder;
@@ -47,7 +46,7 @@ public class BattleManager : MonoBehaviour
     public Stack<Command> attackCommands = new Stack<Command>();
 
     public RectTransform battleUIRectTransform;
-    public Goal curLevelGoal;
+    public StageManager stageManager;
 
     public UnityAction onTurnsChange;
     public static BattleManager instance;
@@ -61,6 +60,7 @@ public class BattleManager : MonoBehaviour
         playerInputManager = GetComponent<PlayerInputManager>();
         pathFinder = GetComponent<PathFinder>();
         enemyAIManager = GetComponent<EnemyAIManager>();
+        stageManager = GetComponent<StageManager>();
 
         #region 单例
         if (instance == null)
@@ -79,8 +79,7 @@ public class BattleManager : MonoBehaviour
     private void Start()
     {
         InitBatlleScence();
-        onTurnsChange += CheckBattleEnd;
-        ScenceManager.instance.onObjectUnregister += CheckBattleEnd;
+        ScenceManager.instance.onObjectUnregister += stageManager.CheckBattleEnd;
         //Temp ↓
         battleState = BattleStat.PlayerCharacterSelect;
         //TO DO：首先检测剧情是否播完，然后进入玩家回合
@@ -131,7 +130,7 @@ public class BattleManager : MonoBehaviour
             }
             else
             {
-                CheckBattleEnd();
+                stageManager.CheckBattleEnd();
             }
 
         }else if(battleState == BattleStat.PlayerWinEnd)
@@ -172,7 +171,7 @@ public class BattleManager : MonoBehaviour
     //输出:无
     public void StartNewPlayerTurn()
     {
-        Turns++;
+        stageManager.OnTurnsChange();
         for(int i = ScenceManager.instance.playerClasses.Count - 1; i >= 0; i--)
         {
             var playerClass = ScenceManager.instance.playerClasses[i];
@@ -419,7 +418,7 @@ public class BattleManager : MonoBehaviour
         battleState = BattleStat.BattleStart;
         ScenceManager.instance.InitClass();
         ScenceManager.instance.InitAllMapObject();
-        //播放剧本
+        stageManager.OnBattleStart();
     }
     #region 玩家选择移动的位置
     //输入:无
@@ -473,6 +472,13 @@ public class BattleManager : MonoBehaviour
                     return;
                 actionSelectGameObject.SetActive(false);
                 var preMoveCommand = moveCommands.Pop();
+                //如果该单位这回合触发过可交互物体，就Un_do还原可交互物体，没有的话则跳过
+                Command preUnitActionCommand = null;
+                if (curSelectClass.unitActionCommands.Count > 0)
+                    preUnitActionCommand = curSelectClass.unitActionCommands.Pop();
+                if(preUnitActionCommand != null)
+                    preUnitActionCommand.Un_Do();
+
                 preMoveCommand.Un_Do();
                 battleState = BattleStat.PlayerCharacterSelect;
             }else if(battleState == BattleStat.PlayerItemSelect)
@@ -670,62 +676,7 @@ public class BattleManager : MonoBehaviour
     }
     #endregion
 
-    #region 检测战斗是否结束
-    //输入:无
-    //效果:在单位死亡，回合数变动的时候检测是否达成了目标，如果是就进入输/赢阶段
-    //输出:无
-    public void CheckBattleEnd()
-    {
-        //根据当前的关卡目标，判断当前的关卡战斗是否结束
-        switch (curLevelGoal.winTarget)
-        {
-            case WinTarget.Kill_All_Enemy:
-                if(ScenceManager.instance.enemyClasses.Count <= 0)
-                {
-                    battleState = BattleStat.PlayerWinEnd;
-                    //TO DO:战斗结束，玩家胜利
-                    Debug.Log("Win");
-                }
-                break;
-            case WinTarget.Kill_Target_Enemy:
-                if (!ScenceManager.instance.enemyClasses.Contains(curLevelGoal.winClassTarget))
-                {
-                    battleState = BattleStat.PlayerWinEnd;
-                }
-                break;
-            case WinTarget.Wait_For_Turns:
-                //TO DO:记录回合数，回合变动时会调用Check函数，判断一下回合数是否等于目标
-                break;
-            //TO DO:可占领的MapObject还没有制作
-            default:
-                break;
-        }
 
-        switch (curLevelGoal.loseTarget)
-        {
-            case LoseTarget.All_Class_Dead:
-                if(ScenceManager.instance.playerClasses.Count <= 0)
-                {
-                    battleState = BattleStat.PlayerLoseEnd;
-                    Debug.Log("Player lose");
-                    //TO DO:战斗结束，玩家失败
-                }
-                break;
-            case LoseTarget.Target_Killed:
-                if (ScenceManager.instance.allyClasses.Contains(curLevelGoal.loseClassTarget))
-                {
-                    battleState = BattleStat.PlayerLoseEnd;
-                }
-                break;
-            case LoseTarget.Wait_For_Turns:
-                //TO DO:和上面一样
-                break;
-            default://同上
-                break;
-        }
-         
-    }
-    #endregion
 
 
 }

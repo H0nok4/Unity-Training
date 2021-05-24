@@ -34,7 +34,8 @@ public class Footman_RunAway : AIState
             srpgClass.StateMeching.ChangeCurState(Footman_Attack.Instance());
         }
         yield break;
-        srpgClass.IsActived = true;
+
+        battleManager.SetUnitActived(srpgClass);
         srpgClass.isRunningAI = false;
     }
 

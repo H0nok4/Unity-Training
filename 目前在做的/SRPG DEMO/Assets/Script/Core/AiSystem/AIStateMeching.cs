@@ -38,7 +38,6 @@ public class AIStateMeching : MonoBehaviour
         if (curState != null)
         {
             StartCoroutine(curState.Execute(srpgClass));
-            Debug.Log("Execute Footman_Attack!");
         }
     }
 

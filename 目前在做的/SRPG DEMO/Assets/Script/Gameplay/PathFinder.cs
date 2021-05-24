@@ -240,7 +240,6 @@ public class PathFinder : MonoBehaviour
         {
             //var curCellData = openList[0];
             var curCellData = openList.Dequeue();
-            Debug.Log(curCellData.F);
 
             closeList.Add(curCellData);
             //openList.Remove(curCellData);

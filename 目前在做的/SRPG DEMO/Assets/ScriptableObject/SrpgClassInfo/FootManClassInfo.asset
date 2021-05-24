@@ -25,7 +25,7 @@ MonoBehaviour:
   - {fileID: 7006663611895276051, guid: db1e0ea0f0b67674c8d2199afc5ede6e, type: 3}
   attack: 10
   defense: 10
-  maxHealth: 200
+  maxHealth: 10
   magicAttack: 10
   magicDefense: 10
   avoid: 15

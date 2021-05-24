@@ -64,7 +64,7 @@ public class AttackCommand:Command
         var damageDetail = defender.OnDamaged(attacker, MapManager.instance.GetSrpgTilemapData(defender.m_Position));
         this.damageDetail = damageDetail;
         ShowDamageDetail(defender.m_Position,damageDetail);
-        attacker.IsActived = true;
+        BattleManager.instance.SetUnitActived(attacker);
     }
 
     public override void Un_Do()

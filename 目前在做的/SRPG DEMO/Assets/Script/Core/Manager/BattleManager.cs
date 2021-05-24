@@ -23,6 +23,7 @@ public enum BattleStat
 public class BattleManager : MonoBehaviour
 {
     #region 成员变量
+    public int Turns = 0;
     public BattleStat battleState;
     public PlayerInputManager playerInputManager;
     public PathFinder pathFinder;
@@ -60,6 +61,7 @@ public class BattleManager : MonoBehaviour
         playerInputManager = GetComponent<PlayerInputManager>();
         pathFinder = GetComponent<PathFinder>();
         enemyAIManager = GetComponent<EnemyAIManager>();
+
         #region 单例
         if (instance == null)
         {
@@ -170,31 +172,71 @@ public class BattleManager : MonoBehaviour
     //输出:无
     public void StartNewPlayerTurn()
     {
-        foreach(var playerClass in ScenceManager.instance.playerClasses)
+        Turns++;
+        for(int i = ScenceManager.instance.playerClasses.Count - 1; i >= 0; i--)
         {
+            var playerClass = ScenceManager.instance.playerClasses[i];
+            playerClass.buffManager.ReduceBuffDuretionTurn();
             playerClass.IsActived = false;
+            OnStartNewTurn(playerClass);
+            playerClass.buffManager.RemoveBuff();
         }
 
-        foreach(var enemyClass in ScenceManager.instance.enemyClasses)
+        for (int i = ScenceManager.instance.enemyClasses.Count - 1; i >= 0; i--)
         {
+            var enemyClass = ScenceManager.instance.enemyClasses[i];
             enemyClass.IsActived = false;
+            OnStartNewTurn(enemyClass);
+            enemyClass.buffManager.RemoveBuff();
         }
 
-        foreach (var allyClass in ScenceManager.instance.allyClasses)
+        for (int i = ScenceManager.instance.allyClasses.Count - 1; i >= 0; i--)
         {
+            var allyClass = ScenceManager.instance.allyClasses[i];
+            allyClass.buffManager.ReduceBuffDuretionTurn();
             allyClass.IsActived = false;
+            OnStartNewTurn(allyClass);
+            allyClass.buffManager.RemoveBuff();
         }
 
-        foreach (var neutralClass in ScenceManager.instance.neutralClasses)
+        for (int i = ScenceManager.instance.neutralClasses.Count - 1; i >= 0; i--)
         {
+            var neutralClass = ScenceManager.instance.neutralClasses[i];
+            neutralClass.buffManager.ReduceBuffDuretionTurn();
             neutralClass.IsActived = false;
+            OnStartNewTurn(neutralClass);
+            neutralClass.buffManager.RemoveBuff();
         }
 
         attackCommands.Clear();
         moveCommands.Clear();
-
+        Debug.Log("New turn");
     }
     #endregion
+
+    private void OnStartNewTurn(SrpgClassUnit unit)
+    {
+        for (int i = unit.buffManager.buffs.Count - 1; i >= 0 ; i--)
+        {
+            for (int j = 0; j < unit.buffManager.buffs[i].buffEffects.Count; j++)
+            {
+                unit.buffManager.buffs[i].buffEffects[j].OnTurnStart(unit);
+            }
+        }
+    }
+
+    public void SetUnitActived(SrpgClassUnit unit)
+    {
+        for (int i = unit.buffManager.buffs.Count - 1; i >= 0; i--)
+        {
+            for (int j = 0; j < unit.buffManager.buffs[i].buffEffects.Count; j++)
+            {
+                unit.buffManager.buffs[i].buffEffects[j].OnTurnEnd(unit);
+                Debug.Log(unit.buffManager.buffs[i].curDurationTimes);
+            }
+        }
+        unit.IsActived = true;
+    }
 
     #region 选择道具使用目标
     //输入:无
@@ -536,10 +578,11 @@ public class BattleManager : MonoBehaviour
     }
     public void Action_Wait()
     {
-        curSelectClass.IsActived = true;
+        SetUnitActived(curSelectClass);
         actionSelectGameObject.SetActive(false);
         battleState = BattleStat.PlayerCharacterSelect;
     }
+
     public void Action_Skill()
     {
         Debug.Log("Action_Skill");

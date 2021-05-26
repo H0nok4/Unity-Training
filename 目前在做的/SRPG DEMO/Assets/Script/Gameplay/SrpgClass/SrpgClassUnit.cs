@@ -23,18 +23,12 @@ public class SrpgClassUnit :  MapObject
     [SerializeField] ClassType m_classType;
     [SerializeField] ClassCamp m_classCamp;
     [SerializeField] SrpgClass m_srpgClass;
-    [SerializeField] string m_UnitName;
-    [SerializeField] int m_Level;
     [SerializeField] int curHealth;
-    [SerializeField] int m_MovePoint;
-    [SerializeField] SrpgWeapon m_Weapon;
-    [SerializeField] SrpgArmor m_Armor;
     [SerializeField] ClassAnimator m_classAnimator;
     [SerializeField] float moveSpeed = 1.0f;
     [SerializeField] GameObject highLightSprite;
     [SerializeField] bool isActived;
     [SerializeField] AIStateMeching m_StateMeching;
-    [SerializeField] List<SrpgUseableItem> m_Items;
     [SerializeField] BuffManager m_buffManager;
     public Stack<Command> unitActionCommands;
     private Slider m_HPSlider;
@@ -44,8 +38,8 @@ public class SrpgClassUnit :  MapObject
 
     public int Level
     {
-        get { return m_Level; }
-        set { m_Level = value; }
+        get { return srpgClass.level; }
+        set { srpgClass.level = value; }
     }
     public int CurHealth
     {
@@ -54,19 +48,17 @@ public class SrpgClassUnit :  MapObject
     }
     public SrpgWeapon Weapon
     {
-        get { return m_Weapon; }
+        get { return m_srpgClass.srpgWeapon; }
     }
-
     public SrpgArmor armor
     {
-        get { return m_Armor; }
+        get { return m_srpgClass.srpgArmor; }
     }
     public bool IsActived
     {
         get { return isActived; }
         set { isActived = value; }
     }
-
     public ClassType classType
     {
         get { return m_classType; }
@@ -76,34 +68,29 @@ public class SrpgClassUnit :  MapObject
     public bool isMoveingPath { get; set; }
     public int moveCost
     {
-        get { return m_MovePoint; }
+        get { return srpgClass.classInfo.classMovePoint; }
     }
-
     public ClassCamp classCamp
     {
         get { return m_classCamp; }
     }
-
     private Dictionary<SrpgClassPropertyType, int> m_Property;
-
     public ClassAnimator animator
     {
         get { return m_classAnimator; }
     }
-
     public AIStateMeching StateMeching
     {
         get { return m_StateMeching; }
     }
-
     public List<SrpgUseableItem> items
     {
-        get { return m_Items; }
+        get { return srpgClass.items; }
     }
-
-    public SrpgClass srpgclass
+    public SrpgClass srpgClass
     {
         get { return m_srpgClass; }
+        set { m_srpgClass = value; }
     }
 
     public BuffManager buffManager
@@ -166,18 +153,13 @@ public class SrpgClassUnit :  MapObject
     }
     public void InitClass()
     {
-        srpgclass.InitSrpgClass();
+        srpgClass.InitSrpgClass();
 
         m_SpriteRenderer = GetComponent<SpriteRenderer>();
         m_classAnimator = GetComponent<ClassAnimator>();
         m_classAnimator.InitAnimator(m_srpgClass.classInfo);
         UpdatePosition(new Vector3Int((int)transform.position.x, (int)transform.position.y, 0));
         m_buffManager = new BuffManager(this);
-
-        m_Weapon = srpgclass.srpgWeapon;
-        m_Armor = srpgclass.srpgArmor;
-        m_MovePoint = m_srpgClass.classInfo.classMovePoint;
-        m_Items = m_srpgClass.items;
 
         InitClassProperty(m_srpgClass);
         curHealth = m_Property[SrpgClassPropertyType.MaxHealth];
@@ -199,20 +181,17 @@ public class SrpgClassUnit :  MapObject
         UpdatePosition(new Vector3Int((int)transform.position.x,(int)transform.position.y,0));
         m_buffManager = new BuffManager(this);
 
-        m_UnitName = srpgClass.srpgClassName;
-        m_MovePoint = srpgClass.classInfo.classMovePoint;
-        m_Level = srpgClass.level;
-        m_Weapon = srpgClass.srpgWeapon;
-        m_Armor = srpgClass.srpgArmor;
-
         InitClassProperty(srpgClass);
         curHealth = m_Property[SrpgClassPropertyType.MaxHealth];
-
-        m_Items = srpgClass.items;
 
         unitActionCommands = new Stack<Command>();
         m_HPSlider = GetComponentInChildren<Slider>();
         m_HPSlider.maxValue = maxHealth;
+    }
+
+    public void SetNewClass(SrpgClass newClass)
+    {
+        m_srpgClass = newClass;
     }
 
     #region 初始化属性
@@ -232,15 +211,16 @@ public class SrpgClassUnit :  MapObject
     #endregion
 
     #region 计算属性
+
     private int CalculateProperty(ClassInfo classInfo,SrpgClassPropertyType type)
     {
         if (type == SrpgClassPropertyType.Attack)
         {
             int attack = 0;
             attack += classInfo.attack;
-            if(m_Weapon != null)
+            if(srpgClass.srpgWeapon != null)
             {
-                attack += m_Weapon.attack;
+                attack += srpgClass.srpgWeapon.attack;
             }
 
             return attack;
@@ -248,9 +228,9 @@ public class SrpgClassUnit :  MapObject
         {
             int defense = 0;
             defense += classInfo.defense;
-            if(m_Armor != null)
+            if(srpgClass.srpgArmor != null)
             {
-                defense += m_Armor.defense;
+                defense += srpgClass.srpgArmor.defense;
             }
 
             return defense;
@@ -258,9 +238,9 @@ public class SrpgClassUnit :  MapObject
         {
             int maxHealth = 0;
             maxHealth += classInfo.maxHealth;
-            if(m_Armor != null)
+            if(srpgClass.srpgArmor != null)
             {
-                maxHealth += m_Armor.health;
+                maxHealth += srpgClass.srpgArmor.health;
             }
 
             return maxHealth;
@@ -268,9 +248,9 @@ public class SrpgClassUnit :  MapObject
         {
             int magicAttack = 0;
             magicAttack += classInfo.magicAttack;
-            if(m_Weapon != null)
+            if(srpgClass.srpgWeapon != null)
             {
-                magicAttack += m_Weapon.magicAttack;
+                magicAttack += srpgClass.srpgWeapon.magicAttack;
             }
 
             return magicAttack;
@@ -278,9 +258,9 @@ public class SrpgClassUnit :  MapObject
         {
             int avoid = 0;
             avoid += classInfo.avoid;
-            if(m_Armor != null)
+            if(srpgClass.srpgArmor != null)
             {
-                avoid += m_Armor.avoid;
+                avoid += srpgClass.srpgArmor.avoid;
             }
 
             return avoid;
@@ -288,9 +268,9 @@ public class SrpgClassUnit :  MapObject
         {
             int hitChance = 0;
             hitChance += classInfo.hitChanceBase;
-            if(m_Weapon != null)
+            if(srpgClass.srpgWeapon != null)
             {
-                hitChance += m_Weapon.hitChance;
+                hitChance += srpgClass.srpgWeapon.hitChance;
             }
 
             return hitChance;
@@ -348,7 +328,7 @@ public class SrpgClassUnit :  MapObject
     {
         attacker.FaceTo(m_Position);
         SrpgWeapon weapon = attacker.Weapon;
-        int delta_Level = attacker.Level - m_Level;
+        int delta_Level = attacker.Level - srpgClass.level;
         Mathf.Clamp(delta_Level, -5, 20);
         int damage =  (int)(attacker.m_Property[SrpgClassPropertyType.Attack] * ((100 - m_Property[SrpgClassPropertyType.Defense]) / 100.0) * (1 + (0.1 * delta_Level)) * Random.Range(0.85f, 1.15f));
         int avoid_Chance = srpgTile.avoidChange + m_Property[SrpgClassPropertyType.Avoid];
@@ -450,6 +430,7 @@ public class SrpgClassUnit :  MapObject
     
     private IEnumerator Move(Vector3Int targetPosition)//行走动画，传入一个目标位置后就可以向目标走动
     {
+        
    
         int deltaX = targetPosition.x - m_Position.x;
 
@@ -499,12 +480,12 @@ public class SrpgClassUnit :  MapObject
 
     public void AddItem(SrpgUseableItem m_Item)
     {
-        m_Items.Add(m_Item);
+        srpgClass.items.Add(m_Item);
     }
 
     public void RemoveItem(SrpgUseableItem m_Item)
     {
-        m_Items.Remove(m_Item);
+        srpgClass.items.Remove(m_Item);
     }
 
     private void onDead()

@@ -10,7 +10,7 @@ public class SmallPotion : SrpgUseableItem
     {
         sprite = ResourceManager.itemSpriteDic["SmallPotion"];
         m_ItemName = "SmallPotion";
-        m_ItemUseTarget = ItemUseTarget.self;
+        m_ItemUseTarget = UseTarget.self;
         m_UseRenge = new int[1][]{
                     new int[1]{ 1 }
                     };
@@ -40,7 +40,7 @@ public class Bandage : SrpgUseableItem
     {
         sprite = ResourceManager.itemSpriteDic["Bandage"];
         m_ItemName = "Bandage";
-        m_ItemUseTarget = ItemUseTarget.ally;
+        m_ItemUseTarget = UseTarget.ally;
         m_UseRenge = new int[3][]
         {
             new int[3]{ 0,1,0 },
@@ -73,7 +73,7 @@ public class Bomb : SrpgUseableItem
     {
         sprite = ResourceManager.itemSpriteDic["Bomb"];
         m_ItemName = "Bomb";
-        m_ItemUseTarget = ItemUseTarget.enemy;
+        m_ItemUseTarget = UseTarget.enemy;
         m_UseRenge = new int[5][]
         {
             new int[5]{ 0,0,1,0,0 },

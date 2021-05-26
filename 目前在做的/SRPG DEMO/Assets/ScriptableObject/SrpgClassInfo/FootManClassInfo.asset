@@ -33,7 +33,7 @@ MonoBehaviour:
   critDamage: 150
   hitChanceBase: 10
   attackLevelBonus: 10
-  defenseLevelBonus: 15
+  defenseLevelBonus: 0
   maxHealthLevelBonus: 20
   magicAttackBonus: 0
   magicDefenseBonus: 0

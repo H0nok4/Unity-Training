@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System;
-public enum ItemUseTarget
+public enum UseTarget
 {
     self,
     ally,
@@ -12,7 +12,7 @@ public enum ItemUseTarget
 public class SrpgUseableItem : item
 {
     public string m_ItemName;
-    public ItemUseTarget m_ItemUseTarget;
+    public UseTarget m_ItemUseTarget;
     public int[][] m_UseRenge;
     public string m_Des;
 

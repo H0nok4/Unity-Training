@@ -11,6 +11,8 @@ public class SrpgClass
     [SerializeField] ClassInfo m_ClassInfo;
     [SerializeField] int m_Level;
     //TO DO:经验值
+    [SerializeField] string m_weaponName;
+    [SerializeField] string m_armorName;
     [SerializeField] SrpgWeapon m_Weapon;
     [SerializeField] SrpgArmor m_Armor;
     [SerializeField] List<SrpgUseableItem> m_Items;
@@ -30,7 +32,7 @@ public class SrpgClass
     public ClassInfo classInfo
     {
         get { return m_ClassInfo; }
-        private set { m_ClassInfo = value; }
+        set { m_ClassInfo = value; }
     }
 
     public int level
@@ -56,6 +58,19 @@ public class SrpgClass
         get { return m_Items; }
         set { m_Items = value; }
     }
+
+    public string weaponName
+    {
+        get { return m_weaponName; }
+        set { m_weaponName = value; }
+    }
+
+    public string armorName
+    {
+        get { return m_armorName; }
+        set { m_armorName = value; }
+    }
+
     #endregion
 
     public SrpgClass(ClassInfo classInfo)
@@ -66,8 +81,8 @@ public class SrpgClass
 
     public void InitSrpgClass()
     {
-        m_Weapon = ItemDatabase.weapon_Dictionary[m_Weapon.weaponName];
-        m_Armor = ItemDatabase.armor_Dictionary[m_Armor.armorName];
+        m_Weapon = ItemDatabase.weapon_Dictionary[m_weaponName];
+        m_Armor = ItemDatabase.armor_Dictionary[m_armorName];
         if (m_Items == null)
             m_Items = new List<SrpgUseableItem>();
         for(int i = 0; i < m_Items.Count; i++)

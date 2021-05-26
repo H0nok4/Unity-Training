@@ -311,7 +311,7 @@ public class BattleManager : MonoBehaviour
         switch (curHoldItem.m_ItemUseTarget)
         {
 
-            case ItemUseTarget.ally:
+            case UseTarget.ally:
                 //判断目标是否不为敌人
                 if (target != null)
                 {
@@ -324,7 +324,7 @@ public class BattleManager : MonoBehaviour
                 }
                 else
                     return false;
-            case ItemUseTarget.enemy:
+            case UseTarget.enemy:
                 if (target != null)
                 {
                     if (target.classCamp == ClassCamp.ally || target.classCamp == ClassCamp.neutral)

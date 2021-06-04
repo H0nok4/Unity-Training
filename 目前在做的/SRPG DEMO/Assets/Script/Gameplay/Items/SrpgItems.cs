@@ -23,11 +23,11 @@ public class SmallPotion : SrpgUseableItem
 
         if(srpgClass.CurHealth / (float)srpgClass.maxHealth <= 0.65f)
         {
-            srpgClass.CurHealth += (int)(srpgClass.maxHealth * 0.35f);
+            srpgClass.ChangeHealth(-(int)(srpgClass.maxHealth * 0.35f));
         }
         else
         {
-            srpgClass.CurHealth = srpgClass.maxHealth;
+            srpgClass.ChangeHealth(-srpgClass.maxHealth);
         }
     }
 }
@@ -55,11 +55,11 @@ public class Bandage : SrpgUseableItem
 
         if (srpgClass.CurHealth / (float)srpgClass.maxHealth <= 0.75f)
         {
-            srpgClass.CurHealth += (int)(srpgClass.maxHealth * 0.25f);
+            srpgClass.ChangeHealth(-(int)(srpgClass.maxHealth * 0.25f));
         }
         else
         {
-            srpgClass.CurHealth = srpgClass.maxHealth;
+            srpgClass.ChangeHealth(-srpgClass.maxHealth);
         }
     }
 }

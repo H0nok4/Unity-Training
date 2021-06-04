@@ -52,33 +52,12 @@ public class ItemDatabase
                 hitChance = 95,
                 attackRenge = new int[3][]{ new int[3] {0,1,0},new int[3] {1,0,1},new int[3] {0,1,0} },
                 maxUseTimes = 15,
-                onDamageTarget = (SrpgClassUnit srpgClass) =>
-                {
-                    //附加固定伤害
-                    srpgClass.CurHealth -= 4;
-                    if(srpgClass.CurHealth <= 0)
-                    {
-                        srpgClass.OnDispawn();
-                    }
-                    Debug.Log("more attack 4");
-                },
-                onDamageSelf = (SrpgClassUnit srpgClass) =>
-                {
-                    //吸血2滴血
-                    if(srpgClass.CurHealth + 2 < srpgClass.maxHealth)
-                    {
-                        srpgClass.CurHealth += 2;
-                    }
-                    else
-                    {
-                        srpgClass.CurHealth = srpgClass.maxHealth;
-                    }
-                }
+                buffs = new string[1]{"Strong"}
                 
             }
         },
         {
-            "IronSword + 1",
+            "IronSword +1",
             new SrpgWeapon()
             {
                 weaponName = "IronSword +1",
@@ -126,10 +105,4 @@ public class ItemDatabase
         },
     };
 
-}
-
-public class DataInfor
-{
-    public string name;
-    public Dictionary<string, SrpgWeapon> weaponDataBase;
 }

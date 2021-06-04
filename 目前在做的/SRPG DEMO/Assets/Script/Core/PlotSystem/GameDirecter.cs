@@ -48,9 +48,6 @@ public class GameDirecter : MonoBehaviour
         }else if(state == ScenarioPlayStatus.wait)
         {
             HandlePlayNextCommand();
-        }else if(state == ScenarioPlayStatus.waitPlayerSelectOption)
-        {
-
         }
     }
     

@@ -110,26 +110,6 @@ public class MapManager : MonoBehaviour
 
     public MapObject CheckMapObjectOnPlayerCursorPosition()
     {
-        /*
-        foreach(var kvp in scenceManager.mapObjectGameObjects)
-        {
-            var gameobjectMapObject = kvp.Value.GetComponent<MapObject>();
-            if (gameobjectMapObject != null)
-            {
-                Vector3Int objectPos = gameobjectMapObject.m_Position;
-                if(objectPos == CursorPosition)
-                {
-                    if( playerCursorMapObject == null ||playerCursorMapObject != gameobjectMapObject)
-                    {
-                        playerCursorMapObject = gameobjectMapObject;
-                    }
-
-                    return gameobjectMapObject;
-                }
-
-            }
-        }
-        */
 
         if (ScenceManager.instance.mapObjectGameObjects.ContainsKey(GetCursorPosition()))
         {

@@ -2,15 +2,16 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class StageManager : MonoBehaviour
+public class StageManager
 {
 
     public StageScenario curScenario;
     public int curTurn = 0;
 
-    public void Start()
+    public StageManager(StageScenario curScenario)
     {
-        curScenario = new StageScenario_Chapter1();
+        curTurn = 0;
+        this.curScenario = curScenario;
     }
 
     #region 战斗结束触发
@@ -23,6 +24,7 @@ public class StageManager : MonoBehaviour
         {
             GameDirecter.instance.PlayScenario(curScenario.EndScenario);
         }
+        Debug.Log("PlayerWin");
     }
     #endregion
 
@@ -36,6 +38,7 @@ public class StageManager : MonoBehaviour
         {
             GameDirecter.instance.PlayScenario(curScenario.StartScenario);
         }
+
     }
     #endregion
 
@@ -71,7 +74,7 @@ public class StageManager : MonoBehaviour
                 {
                     BattleManager.instance.battleState = BattleStat.PlayerWinEnd;
                     //TO DO:战斗结束，玩家胜利
-                    Debug.Log("Win");
+                    OnBattleOver();
                 }
                 break;
             case WinTarget.Kill_Target_Enemy:
@@ -81,6 +84,7 @@ public class StageManager : MonoBehaviour
                 }
                 break;
             case WinTarget.Wait_For_Turns:
+
                 //TO DO:记录回合数，回合变动时会调用Check函数，判断一下回合数是否等于目标
                 break;
             //TO DO:可占领的MapObject还没有制作
@@ -103,13 +107,17 @@ public class StageManager : MonoBehaviour
                 {
                     BattleManager.instance.battleState = BattleStat.PlayerLoseEnd;
                 }
+
                 break;
             case LoseTarget.Wait_For_Turns:
+
                 //TO DO:和上面一样
                 break;
             default://同上
                 break;
         }
+
+
     }
 
     #endregion

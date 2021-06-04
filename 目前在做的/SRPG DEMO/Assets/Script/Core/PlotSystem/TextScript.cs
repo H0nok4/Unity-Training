@@ -137,22 +137,9 @@ public class TextScript
 
         }
 
-        testCommands(commands);
         return commands;
     }
     #endregion
 
-    public void testCommands(List<ScenarioCommand> commands)
-    {
-        for(int i = 0;i<commands.Count;i++)
-        {
-            Debug.Log($"Command[{i}] = " + commands[i].type);
-            for(int j = 0; j < commands[i].parameter.Length; j++)
-            {
-                Debug.Log($"Command[{i}].paramater[{j}] = " + commands[i].parameter[j]);
-            }
-
-        }
-    }
 
 }

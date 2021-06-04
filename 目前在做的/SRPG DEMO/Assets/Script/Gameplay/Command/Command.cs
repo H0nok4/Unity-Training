@@ -36,6 +36,7 @@ public class MoveCommand:Command
         //StartCoroutine(curSelectClass.StartPathMove(pathFinder.AstarCreatMovePath(curSelectClass.m_Position, cursorPosition)));
         var movePath = GameObject.Find("BattleManager").GetComponent<PathFinder>().AstarCreatMovePath(prePos, targetPos);
         srpgClass.MoveTo(movePath);
+        
     }
 
     public override void Un_Do()

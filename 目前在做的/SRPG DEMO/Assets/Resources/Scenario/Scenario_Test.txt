@@ -1,6 +1,6 @@
 $Start;
 	text down footman1;
-		ohhh,Is so boring,Ay-ay-ay-ay-ay, what just happened!;
+		ohhh,Is so boring;
 		how do you do;
 	endtext;
 	text down footman2;
@@ -11,6 +11,7 @@ $Start;
 		option1 shut up and do my work;
 		option2 say fk you self to him;
 	endoption;
+
 	if option1 == 1 goto #end;
 	if option2 == 1 goto #fight;
 	goto #fight;
@@ -24,7 +25,11 @@ $Start;
 		how dare you;
 	endtext;
 
-	text mid none;
+	text top footman2;
+		I will drink from Your Skull!;
+	endtext;
+
+	text mid wei;
 		fight start;
 	endtext;
 

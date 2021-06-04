@@ -68,6 +68,26 @@ public class PlayerInputManager : MonoBehaviour
         return Input.GetKeyDown(KeyCode.Escape);
     }
 
+    public bool GetMouseWheelDown()
+    {
+        if (CanProcessInput() && GameManager.instance.gameState != GameState.PlayScenario)
+        {
+            return Input.GetAxis("Mouse ScrollWheel") < 0;
+        }
+
+        return false;
+    }
+
+    public bool GetMouseWheelUp()
+    {
+        if (CanProcessInput() && GameManager.instance.gameState != GameState.PlayScenario)
+        {
+            return Input.GetAxis("Mouse ScrollWheel") > 0;
+        }
+
+        return false;
+    }
+
     public bool GetBagButton()
     {
         if (CanProcessInput())

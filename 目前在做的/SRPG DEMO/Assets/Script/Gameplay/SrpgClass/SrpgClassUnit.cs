@@ -74,6 +74,7 @@ public class SrpgClassUnit :  MapObject
     {
         get { return m_classCamp; }
     }
+
     private Dictionary<SrpgClassPropertyType, int> m_Property;
     public ClassAnimator animator
     {
@@ -151,6 +152,7 @@ public class SrpgClassUnit :  MapObject
     {
         m_classAnimator.isWalked = isWalked;
     }
+    #region 初始化Unit(无SrpgClass)
     public void InitClass()
     {
         srpgClass.InitSrpgClass();
@@ -160,16 +162,21 @@ public class SrpgClassUnit :  MapObject
         m_classAnimator.InitAnimator(m_srpgClass.classInfo);
         UpdatePosition(new Vector3Int((int)transform.position.x, (int)transform.position.y, 0));
         m_buffManager = new BuffManager(this);
+        AddCurWeaponBuff();
 
         InitClassProperty(m_srpgClass);
-        curHealth = m_Property[SrpgClassPropertyType.MaxHealth];
+        curHealth = maxHealth;
         m_StateMeching = GetComponent<AIStateMeching>();
         m_StateMeching.InitStateMeching(this);
 
         unitActionCommands = new Stack<Command>();
         m_HPSlider = GetComponentInChildren<Slider>();
         m_HPSlider.maxValue = maxHealth;
+
     }
+    #endregion
+
+    #region 初始化Unit(有SrpgClass)
     public void InitClass(SrpgClass srpgClass)
     {
         this.m_srpgClass = srpgClass;
@@ -180,18 +187,25 @@ public class SrpgClassUnit :  MapObject
         m_classAnimator.InitAnimator(srpgClass.classInfo);
         UpdatePosition(new Vector3Int((int)transform.position.x,(int)transform.position.y,0));
         m_buffManager = new BuffManager(this);
+        AddCurWeaponBuff();
 
         InitClassProperty(srpgClass);
-        curHealth = m_Property[SrpgClassPropertyType.MaxHealth];
+        curHealth = maxHealth;
 
         unitActionCommands = new Stack<Command>();
         m_HPSlider = GetComponentInChildren<Slider>();
         m_HPSlider.maxValue = maxHealth;
-    }
 
-    public void SetNewClass(SrpgClass newClass)
+    }
+    #endregion
+
+    public void AddCurWeaponBuff()
     {
-        m_srpgClass = newClass;
+        for(int i = 0; i < srpgClass.srpgWeapon.buffs.Length; i++)
+        {
+            buffManager.AddBuff(BuffDataBase.buff_Dictionary[srpgClass.srpgWeapon.buffs[i]]);
+        }
+
     }
 
     #region 初始化属性
@@ -217,7 +231,7 @@ public class SrpgClassUnit :  MapObject
         if (type == SrpgClassPropertyType.Attack)
         {
             int attack = 0;
-            attack += classInfo.attack;
+            attack += classInfo.attack + (classInfo.attackLevelBonus * Level);
             if(srpgClass.srpgWeapon != null)
             {
                 attack += srpgClass.srpgWeapon.attack;
@@ -227,7 +241,7 @@ public class SrpgClassUnit :  MapObject
         }else if(type == SrpgClassPropertyType.Defense)
         {
             int defense = 0;
-            defense += classInfo.defense;
+            defense += classInfo.defense + (classInfo.defenseLevelBonus * Level);
             if(srpgClass.srpgArmor != null)
             {
                 defense += srpgClass.srpgArmor.defense;
@@ -237,7 +251,7 @@ public class SrpgClassUnit :  MapObject
         }else if(type == SrpgClassPropertyType.MaxHealth)
         {
             int maxHealth = 0;
-            maxHealth += classInfo.maxHealth;
+            maxHealth += classInfo.maxHealth + (classInfo.maxHealthLevelBonus * Level);
             if(srpgClass.srpgArmor != null)
             {
                 maxHealth += srpgClass.srpgArmor.health;
@@ -247,14 +261,24 @@ public class SrpgClassUnit :  MapObject
         }else if(type == SrpgClassPropertyType.MagicAttack)
         {
             int magicAttack = 0;
-            magicAttack += classInfo.magicAttack;
+            magicAttack += classInfo.magicAttack + (classInfo.magicAttackBonus * Level);
             if(srpgClass.srpgWeapon != null)
             {
                 magicAttack += srpgClass.srpgWeapon.magicAttack;
             }
 
             return magicAttack;
-        }else if(type == SrpgClassPropertyType.Avoid)
+        }else if (type == SrpgClassPropertyType.MagicDefense)
+        {
+            int magicDefense = 0;
+            magicDefense += classInfo.magicAttack + (classInfo.magicDefenseBonus * Level);
+            if (srpgClass.srpgArmor != null)
+            {
+                magicDefense += srpgClass.srpgArmor.magicDefense;
+            }
+            return magicDefense;
+        }
+        else if(type == SrpgClassPropertyType.Avoid)
         {
             int avoid = 0;
             avoid += classInfo.avoid;
@@ -299,6 +323,7 @@ public class SrpgClassUnit :  MapObject
 
     }
 
+    #region 根据AI的职业来初始化AI状态机
     public void SetDefaultAIBaseOnClassType()
     {
         if(this.m_classType == ClassType.footman)
@@ -306,6 +331,7 @@ public class SrpgClassUnit :  MapObject
             m_StateMeching.SetCurrentState(Footman_Attack.Instance());
         }
     }
+    #endregion
 
     #region 生命值改变
     //输入:准备改变的数值，正为减少，负为增加
@@ -326,23 +352,35 @@ public class SrpgClassUnit :  MapObject
     #region 被攻击方法
     public DamageDetail OnDamaged(SrpgClassUnit attacker, SrpgTile srpgTile)
     {
-        attacker.FaceTo(m_Position);
-        SrpgWeapon weapon = attacker.Weapon;
+        DamageDetail damageDetail = new DamageDetail();
+        if(attacker != null)
+        {
+            attacker.FaceTo(m_Position);
+        }
+
         int delta_Level = attacker.Level - srpgClass.level;
         Mathf.Clamp(delta_Level, -5, 20);
+
         int damage =  (int)(attacker.m_Property[SrpgClassPropertyType.Attack] * ((100 - m_Property[SrpgClassPropertyType.Defense]) / 100.0) * (1 + (0.1 * delta_Level)) * Random.Range(0.85f, 1.15f));
         int avoid_Chance = srpgTile.avoidChange + m_Property[SrpgClassPropertyType.Avoid];
-        int rd = Random.Range(0, 101);
-        int rd2 = Random.Range(0, 101);
+        int rd = Random.Range(0, 101);//闪避骰子
+        int rd2 = Random.Range(0, 101);//暴击骰子
+
+        damageDetail.damage = damage;
+        damageDetail.attacker = attacker;
+        damageDetail.defender = this;
+
         if (rd <= avoid_Chance)
         {
-            damage = (int)(damage * 0.5);
+            //damage = (int)(damage * 0.5);
+            damageDetail.isAvoid = true;
         }
         else
         {
             if(rd2 < attacker.critChance)
             {
-                damage *= attacker.critDamage / 100;
+                //damage *= attacker.critDamage / 100;
+                damageDetail.isCritical = true;
             }
         }
 
@@ -351,32 +389,30 @@ public class SrpgClassUnit :  MapObject
         {
             for(int j = 0; j < attacker.buffManager.buffs[i].buffEffects.Count; j++)
             {
-                attacker.buffManager.buffs[i].buffEffects[j].OnAttack(attacker, this,ref damage);
+                attacker.buffManager.buffs[i].buffEffects[j].OnAttack(attacker, this,ref damageDetail);
             }
         }
-        for (int i = 0; i < attacker.buffManager.buffs.Count; i++)
+
+        for (int i = 0; i < this.buffManager.buffs.Count; i++)
         {
-            for (int j = 0; j < attacker.buffManager.buffs[i].buffEffects.Count; j++)
+            for (int j = 0; j < this.buffManager.buffs[i].buffEffects.Count; j++)
             {
-                this.buffManager.buffs[i].buffEffects[j].OnDefend(this,attacker,ref damage);
+                this.buffManager.buffs[i].buffEffects[j].OnDefend(this,attacker,ref damageDetail);
             }
         }
         #endregion
 
-        DamageDetail damageDetail = new DamageDetail()
-        {
-            damage = damage,
-            isAvoid = rd <= avoid_Chance,
-            isCritical = rd2 <= attacker.critChance
-        };
 
-        ChangeHealth(damage);
-        Debug.Log($"Recive Damage :{damage.ToString()},curHealth :{curHealth}");
+
+        ChangeHealth(damageDetail.damage);
+        Debug.Log($"Recive Damage :{damageDetail.damage.ToString()},curHealth :{curHealth}");
 
         return damageDetail;
         
     }
     #endregion
+
+    #region 获得Unit的真实属性
     private int GetState(SrpgClassPropertyType type)
     {
         int stateValue = m_Property[type];
@@ -389,8 +425,10 @@ public class SrpgClassUnit :  MapObject
         }
 
         return stateValue;
-    } 
+    }
+    #endregion
 
+    #region 改变Unit的朝向
     private void FaceTo(Vector3Int targetPos)
     {
         int deltaX = targetPos.x - m_Position.x;
@@ -399,12 +437,16 @@ public class SrpgClassUnit :  MapObject
         int deltaY = targetPos.y - m_Position.y;
         m_classAnimator.moveY = Mathf.Clamp(deltaY, -1, 1);
     }
+    #endregion
 
+    #region 移动方法
     public void MoveTo(List<CellData> path)
     {
         StartCoroutine(StartPathMove(path));
     }
+    #endregion
 
+    #region 协程移动方法
     public IEnumerator StartPathMove(List<CellData> moveList)
     {
         isMoveingPath = true;
@@ -426,8 +468,9 @@ public class SrpgClassUnit :  MapObject
         OnMoveEnd();
         isMoveingPath = false;
     }
+    #endregion
 
-    
+    #region 移动到目标格
     private IEnumerator Move(Vector3Int targetPosition)//行走动画，传入一个目标位置后就可以向目标走动
     {
         
@@ -451,10 +494,16 @@ public class SrpgClassUnit :  MapObject
         isWalked = false;
         UpdatePosition(new Vector3Int((int)transform.position.x, (int)transform.position.y, 0));
     }
+    #endregion
+
+    #region 在移动开始触发
     public void OnMoveStart()
     {
         BattleManager.instance.isWalking = true;
     }
+    #endregion
+
+    #region 在移动结束的时候触发
     public void OnMoveEnd()
     {
 
@@ -470,18 +519,48 @@ public class SrpgClassUnit :  MapObject
         }
 
     }
+    #endregion
 
+    #region 传送到目标位置
     public void TeleportTo(Vector3Int targetPos)
     {
-        transform.position = targetPos;
         StopCoroutine("StartPathMove");
+        transform.position = targetPos;
         UpdatePosition(targetPos);
+        ScenceManager.instance.UpdateMapObjectPosition();
     }
+    #endregion
 
+    #region 添加Srpg道具给SrpgClass
     public void AddItem(SrpgUseableItem m_Item)
     {
         srpgClass.items.Add(m_Item);
     }
+    #endregion
+
+    #region 设置Unit为行动过状态
+    public void SetUnitActived()
+    {
+        for (int i = buffManager.buffs.Count - 1; i >= 0; i--)
+        {
+            for (int j = 0; j < buffManager.buffs[i].buffEffects.Count; j++)
+            {
+                buffManager.buffs[i].buffEffects[j].OnTurnEnd(this);
+                Debug.Log(buffManager.buffs[i].curDurationTimes);
+            }
+        }
+        m_SpriteRenderer.color = Color.gray;
+        IsActived = true;
+    }
+    #endregion
+
+    #region 设置Unit为未行动过状态
+    public void SetUnitActive()
+    {
+        m_SpriteRenderer.color = Color.white;
+        isActived = false;
+    }
+    #endregion
 
     public void RemoveItem(SrpgUseableItem m_Item)
     {
@@ -505,6 +584,8 @@ public class SrpgClassUnit :  MapObject
 
 public class DamageDetail
 {
+    public SrpgClassUnit attacker;
+    public SrpgClassUnit defender;
     public int damage;
     public bool isAvoid;
     public bool isCritical;

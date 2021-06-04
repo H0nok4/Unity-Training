@@ -60,8 +60,9 @@ public class BattleManager : MonoBehaviour
         playerInputManager = GetComponent<PlayerInputManager>();
         pathFinder = GetComponent<PathFinder>();
         enemyAIManager = GetComponent<EnemyAIManager>();
-        stageManager = GetComponent<StageManager>();
-
+        //Temp
+        stageManager = new StageManager(new StageScenario_Chapter1());
+        //Temp
         #region 单例
         if (instance == null)
         {
@@ -171,20 +172,24 @@ public class BattleManager : MonoBehaviour
     //输出:无
     public void StartNewPlayerTurn()
     {
+        stageManager.CheckBattleEnd();
+           
+
         stageManager.OnTurnsChange();
         for(int i = ScenceManager.instance.playerClasses.Count - 1; i >= 0; i--)
         {
             var playerClass = ScenceManager.instance.playerClasses[i];
             playerClass.buffManager.ReduceBuffDuretionTurn();
-            playerClass.IsActived = false;
+            playerClass.SetUnitActive();
             OnStartNewTurn(playerClass);
             playerClass.buffManager.RemoveBuff();
+            playerClass.unitActionCommands.Clear();
         }
 
         for (int i = ScenceManager.instance.enemyClasses.Count - 1; i >= 0; i--)
         {
             var enemyClass = ScenceManager.instance.enemyClasses[i];
-            enemyClass.IsActived = false;
+            enemyClass.SetUnitActive();
             OnStartNewTurn(enemyClass);
             enemyClass.buffManager.RemoveBuff();
         }
@@ -193,7 +198,7 @@ public class BattleManager : MonoBehaviour
         {
             var allyClass = ScenceManager.instance.allyClasses[i];
             allyClass.buffManager.ReduceBuffDuretionTurn();
-            allyClass.IsActived = false;
+            allyClass.SetUnitActive();
             OnStartNewTurn(allyClass);
             allyClass.buffManager.RemoveBuff();
         }
@@ -202,7 +207,7 @@ public class BattleManager : MonoBehaviour
         {
             var neutralClass = ScenceManager.instance.neutralClasses[i];
             neutralClass.buffManager.ReduceBuffDuretionTurn();
-            neutralClass.IsActived = false;
+            neutralClass.SetUnitActive();
             OnStartNewTurn(neutralClass);
             neutralClass.buffManager.RemoveBuff();
         }
@@ -226,15 +231,7 @@ public class BattleManager : MonoBehaviour
 
     public void SetUnitActived(SrpgClassUnit unit)
     {
-        for (int i = unit.buffManager.buffs.Count - 1; i >= 0; i--)
-        {
-            for (int j = 0; j < unit.buffManager.buffs[i].buffEffects.Count; j++)
-            {
-                unit.buffManager.buffs[i].buffEffects[j].OnTurnEnd(unit);
-                Debug.Log(unit.buffManager.buffs[i].curDurationTimes);
-            }
-        }
-        unit.IsActived = true;
+        unit.SetUnitActived();
     }
 
     #region 选择道具使用目标

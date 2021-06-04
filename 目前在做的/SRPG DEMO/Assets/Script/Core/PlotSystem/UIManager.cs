@@ -62,7 +62,7 @@ public class UIManager : MonoBehaviour
         DialogBox dialogBox;
         switch (position)
         {
-            case "up":
+            case "top":
                 dialogBox = upDialogBox;
                 midDialogBox.Display(false);
                 break;

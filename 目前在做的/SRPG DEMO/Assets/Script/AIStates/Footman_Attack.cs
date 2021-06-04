@@ -32,11 +32,9 @@ public class Footman_Attack : AIState
 
 
         SrpgClassUnit target = null;
-        //Start 找到最近的目标
+        //找到最近的目标
         target = pathFinder.DijsktraFindPlayerClass(srpgClass.m_Position);
         int minDis = Math.Abs(srpgClass.m_Position.x - target.m_Position.x) + Math.Abs(srpgClass.m_Position.y - target.m_Position.y);
-
-        //End
 
         var aStarPath = pathFinder.AstarCreatMovePath(srpgClass.m_Position, target.m_Position);
         foreach(var movePos in aStarPath)
@@ -44,7 +42,7 @@ public class Footman_Attack : AIState
             //如果常规的检测距离，AI有时候会呆呆得卡在墙角想打墙后的玩家，所以加入一个A*临时创建的路径到目标，A*路径经过的格子会有额外加分，然后AI就可以绕过障碍物去寻找玩家了
             if (moveRenge.ContainsKey(movePos.m_Position))
             {
-                moveRenge[movePos.m_Position] += (3 + 2 * (Math.Abs(movePos.m_Position.x - srpgClass.m_Position.x) + Math.Abs(movePos.m_Position.y - srpgClass.m_Position.y)));
+                moveRenge[movePos.m_Position] += (5 + 3 * (Math.Abs(movePos.m_Position.x - srpgClass.m_Position.x) + Math.Abs(movePos.m_Position.y - srpgClass.m_Position.y)));
             }
         }
 
@@ -75,7 +73,7 @@ public class Footman_Attack : AIState
         {
             maxScore = Math.Max(kvp.Value, maxScore);
         }
-
+        Debug.Log($"{maxScore}");
         //找到得分最高的位置，然后看看目标位置是否有AttackOrder存在，如果有的话代表该位置需要攻击敌人，没有的话就是直接移动到该位置即可
         foreach (var kvp in moveRenge)
         {
@@ -130,23 +128,6 @@ public class Footman_Attack : AIState
     {
 
     }
-    public SrpgClassUnit FindNearestPlayerUnit(Vector3Int startPos)
-    {
-        SrpgClassUnit target = null;
-        int minDis = int.MaxValue;
-        foreach(var playerUnit in scenceManager.playerClasses)
-        {
-            var path = pathFinder.AstarCreatMovePath(startPos, playerUnit.m_Position);
-            if(path[path.Count - 1].F < minDis)
-            {
-                minDis = path[path.Count - 1].F;
-                target = playerUnit;
-            }
-        }
-
-        return target;
-    }
-
 
     public AttackOrder DetectingCanAttackPos(Vector3Int attackPos,int[][] attackRenge,SrpgClassUnit attacker)
     {

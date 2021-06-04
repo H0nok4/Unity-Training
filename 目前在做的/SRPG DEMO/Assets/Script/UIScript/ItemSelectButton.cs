@@ -21,13 +21,10 @@ public class ItemSelectButton : Button
         m_Item = item;
         m_itemImage.sprite = item.sprite;
         m_ItemNameText.text = item.m_ItemName;
-        Debug.Log(item.m_ItemName);
-        Debug.Log(item.sprite.name);
     }
     public override void OnPointerClick(PointerEventData eventData)
     {
         //TO DO：进入选择道具的使用对象状态
-        Debug.Log("Use item");
         BattleManager.instance.HandleItemUse(m_Item);
     }
 

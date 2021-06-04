@@ -9,11 +9,13 @@ public enum BuffDurationType
 public class Buff
 {
     public int id;
+    public string buffName;
     public BuffDurationType durationType;
-    public int maxDurationTimes;
-    public int curDurationTimes;
+    public short maxDurationTimes;
+    public short curDurationTimes;
     public short maxOverlayTimes;
-    public int curOverlayTimes;
+    public short curOverlayTimes;
+    public object[] parameter;
     public List<string> tags;
     protected List<BuffEffect> m_buffEffects; 
 

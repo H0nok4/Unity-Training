@@ -54,6 +54,25 @@ public class StateChangeIncreaseDefense_10per : BuffEffect
 
 #endregion
 
+#region 每层增加20点生命
+public class StateChangeIncreaseHealthPoint_20per : BuffEffect
+{
+    public StateChangeIncreaseHealthPoint_20per(Buff buff)
+    {
+        m_Buff = buff;
+    }
+
+    public override void StateChange(ref int stateValue, SrpgClassPropertyType type)
+    {
+        if (type == SrpgClassPropertyType.MaxHealth)
+        {
+            stateValue += 20 * m_Buff.curOverlayTimes;
+        }
+    }
+}
+
+#endregion
+
 #region 眩晕
 public class SkipThisTurn : BuffEffect
 {

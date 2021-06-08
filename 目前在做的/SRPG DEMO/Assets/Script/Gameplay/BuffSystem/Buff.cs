@@ -24,14 +24,21 @@ public class Buff
         get { return m_buffEffects; }
     }
     
-    
     public virtual void OnBuffAdd(SrpgClassUnit unit)
     {
         //BUFF可能在添加的时候会改变一些表现，比如护盾，狂暴。
+        foreach(var buffEffect in m_buffEffects)
+        {
+            buffEffect.OnBuffAdd();
+        }
     }
 
     public virtual void OnBuffRemove(SrpgClassUnit unit)
     {
         //BUFF可能在移除的时候会改变一些表现
+        foreach(var buffEffect in m_buffEffects)
+        {
+            buffEffect.OnBuffRemove();
+        }
     }
 }

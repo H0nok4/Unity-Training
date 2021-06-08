@@ -17,7 +17,7 @@ public class Chest : InteractiveObject
         {
             Debug.Log($"Item Name invalid →{itemName}");
         }
-
+        ScenceManager.instance.UnRegisterInteractiveObject(pos);
         this.gameObject.SetActive(false);
     }
 

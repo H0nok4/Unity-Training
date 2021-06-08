@@ -10,12 +10,12 @@ public class BuffEffect : IBuffEffect
 
     }
 
-    public virtual void OnAttack(SrpgClassUnit unit, SrpgClassUnit target,ref DamageDetail damage)//√在SrpgClassUnit的被攻击方法中触发
+    public virtual void OnAttack(SrpgClassUnit unit, SrpgClassUnit target,DamageDetail curDamageDetail,DamageDetail OriginalDamageDetail)//√在SrpgClassUnit的被攻击方法中触发
     {
         
     }
 
-    public virtual void OnDefend(SrpgClassUnit unit, SrpgClassUnit attacker,ref DamageDetail damage)//√在SrpgClassUnit的被攻击方法中触发
+    public virtual void OnDefend(SrpgClassUnit unit, SrpgClassUnit attacker,DamageDetail curDamageDetail,DamageDetail OriginalDamageDetail)//√在SrpgClassUnit的被攻击方法中触发
     {
         
     }
@@ -28,6 +28,16 @@ public class BuffEffect : IBuffEffect
     public virtual void OnTurnStart(SrpgClassUnit unit)//√在BattleManager的StartNewTurn方法中触发
     {
         
+    }
+
+    public virtual void OnBuffAdd()
+    {
+
+    }
+
+    public virtual void OnBuffRemove()
+    {
+
     }
 
 

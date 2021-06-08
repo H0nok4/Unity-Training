@@ -1,1 +1,33 @@
-{"IronSword":{"weaponName":"IronSword","weaponDes":"a sword is made of iron","attack":7,"magicAttack":0,"hitChance":95,"attackRenge":[[0,1,0],[1,0,1],[0,1,0]],"maxUseTimes":15,"buffs":["Strong"],"sprite":null},"IronSword +1":{"weaponName":"IronSword +1","weaponDes":"an sword is made of iron","attack":9,"magicAttack":0,"hitChance":100,"attackRenge":[[0,1,0],[1,0,1],[0,1,0]],"maxUseTimes":15,"buffs":null,"sprite":null}}
+{
+    "IronSword": {
+        "weaponName": "IronSword",
+        "weaponDes": "a sword is made of iron",
+        "attack": 7,
+        "magicAttack": 0,
+        "hitChance": 95,
+        "attackRenge": [
+            [ 0, 1, 0 ],
+            [ 1, 0, 1 ],
+            [ 0, 1, 0 ]
+        ],
+        "maxUseTimes": 15,
+        "buffs": [ "Strong" ],
+        "sprite": null
+    },
+    "IronSword +1": {
+        "weaponName": "IronSword +1",
+        "weaponDes": "an sword is made of iron",
+        "attack": 9,
+        "magicAttack": 0,
+        "hitChance": 100,
+        "attackRenge": [
+            [ 0, 1, 0 ],
+            [ 1, 0, 1 ],
+            [ 0, 1, 0 ]
+        ],
+        "maxUseTimes": 15,
+        "buffs": [ "Strong" ],
+        "sprite": null
+    }
+
+}

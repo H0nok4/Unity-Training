@@ -6,7 +6,7 @@ using UnityEngine;
 public class Footman_Attack : AIState
 {
     /* Attack状态下，AI会优先寻找最近的敌人攻击
-     * Execute方法具体逻辑：先找到最近的一个敌人设置为target，获取该敌人的位置，然后和自己的坐标求得切比雪夫距离。
+     * Execute方法具体逻辑：先找到最近的一个敌人设置为target，获取该敌人的位置，然后和自己的坐标求得曼哈顿。
      * 然后遍历每个可以行走的位置，并且计算每个位置与敌人的曼哈顿距离，如果比原始位置近的，该位置的得分 += 距离差值
      * 在遍历位置的时候还要判断当前位置是否能够攻击到目标，如果可以，估算攻击的值（估算公式：总伤害 = 自己的攻击 * 目标防御）
      * ReciveMessager方法具体逻辑:当接收到消息"Msg_HelperMe!"的时候，将当前状态改变为帮助目标状态
@@ -104,12 +104,13 @@ public class Footman_Attack : AIState
                 }
             }
         }
-            
+        /*
         if(srpgClass.CurHealth / (float)srpgClass.maxHealth <= 0.3f)
         {
             //TO DO:血量低下，改变状态为寻找治疗者或者使用加血道具
             srpgClass.StateMeching.ChangeCurState(Footman_RunAway.Instance());
         }
+        */
         battleManager.SetUnitActived(srpgClass);
         srpgClass.isRunningAI = false;
     }
@@ -129,6 +130,7 @@ public class Footman_Attack : AIState
 
     }
 
+    #region 检测可以攻击的位置
     public AttackOrder DetectingCanAttackPos(Vector3Int attackPos,int[][] attackRenge,SrpgClassUnit attacker)
     {
         //发现该位置是个可互动位置，不要走到那个位置攻击，可能会踩到传送门传送走，很憨
@@ -173,7 +175,7 @@ public class Footman_Attack : AIState
 
         return null;
     }
-
+    #endregion
 
 }
 

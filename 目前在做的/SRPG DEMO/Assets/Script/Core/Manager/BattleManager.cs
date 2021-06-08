@@ -27,6 +27,7 @@ public class BattleManager : MonoBehaviour
     public PlayerInputManager playerInputManager;
     public PathFinder pathFinder;
     EnemyAIManager enemyAIManager;
+    public StageManager stageManager;
 
     public SrpgUseableItem curHoldItem;
     public SrpgClassUnit curSelectClass;
@@ -46,10 +47,11 @@ public class BattleManager : MonoBehaviour
     public Stack<Command> attackCommands = new Stack<Command>();
 
     public RectTransform battleUIRectTransform;
-    public StageManager stageManager;
 
     public UnityAction onTurnsChange;
     public static BattleManager instance;
+
+    [SerializeField] Test test;
 
     public bool isWalking = false;
     #endregion
@@ -84,6 +86,7 @@ public class BattleManager : MonoBehaviour
         //Temp ↓
         battleState = BattleStat.PlayerCharacterSelect;
         //TO DO：首先检测剧情是否播完，然后进入玩家回合
+
     }
 
     public void HandleUpdate()
@@ -129,10 +132,7 @@ public class BattleManager : MonoBehaviour
                 battleState = BattleStat.PlayerCharacterSelect;
                 StartNewPlayerTurn();
             }
-            else
-            {
-                stageManager.CheckBattleEnd();
-            }
+
 
         }else if(battleState == BattleStat.PlayerWinEnd)
         {
@@ -161,7 +161,13 @@ public class BattleManager : MonoBehaviour
             }
 
             battleState = BattleStat.EnemyTurn;
-            
+            for (int i = ScenceManager.instance.enemyClasses.Count - 1; i >= 0; i--)
+            {
+                var enemyClass = ScenceManager.instance.enemyClasses[i];
+                enemyClass.buffManager.ReduceBuffDuretionTurn();
+                OnStartNewTurn(enemyClass);
+                enemyClass.buffManager.RemoveBuff();
+            }
         }
     }
     #endregion
@@ -190,8 +196,6 @@ public class BattleManager : MonoBehaviour
         {
             var enemyClass = ScenceManager.instance.enemyClasses[i];
             enemyClass.SetUnitActive();
-            OnStartNewTurn(enemyClass);
-            enemyClass.buffManager.RemoveBuff();
         }
 
         for (int i = ScenceManager.instance.allyClasses.Count - 1; i >= 0; i--)
@@ -351,7 +355,7 @@ public class BattleManager : MonoBehaviour
 
     }
     #endregion
-    public void RunTurn(SrpgClassUnit attacker, SrpgClassUnit defender, bool isSkill = false)
+    public void RunTurn(SrpgClassUnit attacker, SrpgClassUnit defender,SkillBase skill = null)
     {
         AttackCommand attackCommand = new AttackCommand(attacker, defender);
         attackCommand.Execute();
@@ -376,11 +380,6 @@ public class BattleManager : MonoBehaviour
             var srpgClass = mapObject.gameObject.GetComponent<SrpgClassUnit>();
             battleClassUI.UpdateUI(srpgClass);
         }
-
-
-
-
-
 
     }
 
@@ -581,6 +580,7 @@ public class BattleManager : MonoBehaviour
     }
     public void Action_Wait()
     {
+        test.TestFunc(ScenceManager.instance.playerClasses[0], ScenceManager.instance.enemyClasses[0]);
         SetUnitActived(curSelectClass);
         actionSelectGameObject.SetActive(false);
         battleState = BattleStat.PlayerCharacterSelect;

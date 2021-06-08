@@ -1,0 +1,48 @@
+{
+    "Burning": {
+        "SkillName": "Burning",
+        "SkillDes": "Make target burning,cause 50 damage and 50% make target [Burn]",
+        "SkillRenge": [
+            [0,1,0],
+            [1,0,1],
+            [0,1,0]
+        ],
+        "SkillTargetCamp": "Enemy",
+        "OnSkillActive": {
+            "Target": [
+                {
+                    "SkillTarget": "Target",
+                    "Damage": {
+                        "DamageValue": "30"
+                    }
+                }
+            ]
+        },
+        "OnBeforeSkillActive": {
+            "Target": [
+                {
+                    "SkillTarget": "Target",
+                    "Damage": {
+                        "DamageValue": "20"
+                    }
+                }
+            ]
+        },
+        "OnAfterSkillActive": {
+            "If": [
+                {
+                    "IfParameter": [
+                        "Chance",
+                        "50"
+                    ],
+                    "TargetDetermine": {
+                        "SkillTarget": "Target",
+                        "AddBuff": {
+                            "BuffName": "Burn"
+                        }
+                    }
+                }
+            ]
+        }
+    }
+}

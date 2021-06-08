@@ -14,7 +14,7 @@ public class Burn : Buff
         curDurationTimes = maxDurationTimes;
         maxOverlayTimes = 3;
         curOverlayTimes = 1;
-        tags = new List<string>() { "dot", "burn" };
+        tags = new List<string>() { "Dot", "Burn" };
         m_buffEffects = new List<BuffEffect>() { new OnTurnEndReduceUnitHealth_10per(this) };
     }
 }
@@ -50,7 +50,7 @@ public class Stun : Buff
         curDurationTimes = maxDurationTimes;
         maxOverlayTimes = 1;
         curOverlayTimes = 1;
-        tags = new List<string>() { "Stun" };
+        tags = new List<string>() { "Stun","Control" };
         m_buffEffects = new List<BuffEffect>() { new SkipThisTurn(this) };
     }
 }

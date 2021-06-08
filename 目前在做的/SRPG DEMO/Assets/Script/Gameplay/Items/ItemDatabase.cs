@@ -35,7 +35,10 @@ public class ItemDatabase
         //序列化Test
         string jsonPath = "Assets/WeaponData/WeaponDataBase.json";
 
-        File.WriteAllText(jsonPath, JsonConvert.SerializeObject(weapon_Dictionary));
+        //File.WriteAllText(jsonPath, JsonConvert.SerializeObject(weapon_Dictionary));
+        string weaponData = File.ReadAllText(jsonPath);
+        weapon_Dictionary = JsonConvert.DeserializeObject<Dictionary<string, SrpgWeapon>>(weaponData);
+        Debug.Log($"{weapon_Dictionary.Count}");
     }
 
     public static Dictionary<string, SrpgWeapon> weapon_Dictionary { get; set; } = new Dictionary<string, SrpgWeapon>()
@@ -66,7 +69,8 @@ public class ItemDatabase
                 magicAttack = 0,
                 hitChance = 100,
                 attackRenge = new int[3][]{ new int[3] {0,1,0},new int[3] {1,0,1},new int[3] {0,1,0} },
-                maxUseTimes = 15
+                maxUseTimes = 15,
+                buffs = new string[1]{"Strong"}
             }
         },
     };

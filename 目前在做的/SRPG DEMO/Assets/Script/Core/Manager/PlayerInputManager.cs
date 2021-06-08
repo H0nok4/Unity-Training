@@ -6,6 +6,7 @@ using UnityEngine.Tilemaps;
 public class PlayerInputManager : MonoBehaviour
 {
     public static PlayerInputManager instance;
+
     private void Awake()
     {
         if(instance == null)

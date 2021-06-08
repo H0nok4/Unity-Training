@@ -116,6 +116,7 @@ public class GameDirecter : MonoBehaviour
         state = ScenarioPlayStatus.waitForNewScenario;
         curScenarioCommands.Clear();
         curCommandPosition = 0;
+        ScenarioHeap.Clear();
         UIManager.instance.ClearAll();
     }
 

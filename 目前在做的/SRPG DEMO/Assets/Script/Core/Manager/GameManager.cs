@@ -26,12 +26,13 @@ public class GameManager : MonoBehaviour
             }
         }
         DontDestroyOnLoad(gameObject);
+
     }
 
     public void Start()
     {
-
         ItemDatabase.Init();
+
     }
 
     private void Update()

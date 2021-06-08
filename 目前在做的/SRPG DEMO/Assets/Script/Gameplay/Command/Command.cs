@@ -34,7 +34,7 @@ public class MoveCommand:Command
     public override void Execute()
     {
         //StartCoroutine(curSelectClass.StartPathMove(pathFinder.AstarCreatMovePath(curSelectClass.m_Position, cursorPosition)));
-        var movePath = GameObject.Find("BattleManager").GetComponent<PathFinder>().AstarCreatMovePath(prePos, targetPos);
+        var movePath = BattleManager.instance.pathFinder.AstarCreatMovePath(prePos, targetPos);
         srpgClass.MoveTo(movePath);
         
     }
@@ -46,25 +46,28 @@ public class MoveCommand:Command
         srpgClass.transform.position = prePos;
         srpgClass.animator.moveX = preMoveX;
         srpgClass.animator.moveY = preMoveY;
-        GameObject.Find("BattleManager").GetComponent<ScenceManager>().UpdateMapObjectPosition();
+        ScenceManager.instance.UpdateMapObjectPosition();
     }
 }
 
 public class AttackCommand:Command
 {
     public SrpgClassUnit attacker;
-    public SrpgClassUnit defender;
+    public SrpgClassUnit target;
     public DamageDetail damageDetail;
+    public SkillBase skill;
     public AttackCommand(SrpgClassUnit attacker,SrpgClassUnit defender)
     {
         this.attacker = attacker;
-        this.defender = defender;
+        this.target = defender;
     }
+
     public override void Execute()
     {
-        var damageDetail = defender.OnDamaged(attacker, MapManager.instance.GetSrpgTilemapData(defender.m_Position));
+
+        var damageDetail = target.OnDamaged(attacker);
         this.damageDetail = damageDetail;
-        ShowDamageDetail(defender.m_Position,damageDetail);
+        ShowDamageDetail(target.m_Position, damageDetail);
         BattleManager.instance.SetUnitActived(attacker);
     }
 

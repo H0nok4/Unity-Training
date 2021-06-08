@@ -7,7 +7,6 @@ public enum FaceDirection { Up, Down, Left, Right }
 [Serializable]
 public class ClassAnimator : MonoBehaviour//角色自定义动画播放器
 {
-    //
     public float moveX { get; set; }
     public float moveY { get; set; }
 

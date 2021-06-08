@@ -159,6 +159,7 @@ public class SrpgClassUnit :  MapObject
 
         m_SpriteRenderer = GetComponent<SpriteRenderer>();
         m_classAnimator = GetComponent<ClassAnimator>();
+        m_HPSlider = GetComponentInChildren<Slider>();
         m_classAnimator.InitAnimator(m_srpgClass.classInfo);
         UpdatePosition(new Vector3Int((int)transform.position.x, (int)transform.position.y, 0));
         m_buffManager = new BuffManager(this);
@@ -166,13 +167,15 @@ public class SrpgClassUnit :  MapObject
 
         InitClassProperty(m_srpgClass);
         curHealth = maxHealth;
+
+
         m_StateMeching = GetComponent<AIStateMeching>();
         m_StateMeching.InitStateMeching(this);
 
         unitActionCommands = new Stack<Command>();
-        m_HPSlider = GetComponentInChildren<Slider>();
-        m_HPSlider.maxValue = maxHealth;
 
+        m_HPSlider.maxValue = maxHealth;
+        UpdateHPSlider();
     }
     #endregion
 
@@ -184,6 +187,7 @@ public class SrpgClassUnit :  MapObject
 
         m_SpriteRenderer = GetComponent<SpriteRenderer>();
         m_classAnimator = GetComponent<ClassAnimator>();
+        m_HPSlider = GetComponentInChildren<Slider>();
         m_classAnimator.InitAnimator(srpgClass.classInfo);
         UpdatePosition(new Vector3Int((int)transform.position.x,(int)transform.position.y,0));
         m_buffManager = new BuffManager(this);
@@ -192,21 +196,35 @@ public class SrpgClassUnit :  MapObject
         InitClassProperty(srpgClass);
         curHealth = maxHealth;
 
-        unitActionCommands = new Stack<Command>();
-        m_HPSlider = GetComponentInChildren<Slider>();
-        m_HPSlider.maxValue = maxHealth;
 
+        unitActionCommands = new Stack<Command>();
+
+        m_HPSlider.maxValue = maxHealth;
+        UpdateHPSlider();
     }
     #endregion
 
+    #region 将武器上的Buff添加到角色Unit身上
     public void AddCurWeaponBuff()
     {
         for(int i = 0; i < srpgClass.srpgWeapon.buffs.Length; i++)
         {
-            buffManager.AddBuff(BuffDataBase.buff_Dictionary[srpgClass.srpgWeapon.buffs[i]]);
+            var type = System.Type.GetType(srpgClass.srpgWeapon.buffs[i]);
+            if(type == null)
+            {
+                Debug.LogError("No valid buff name");
+            }
+            var buff = type.Assembly.CreateInstance(srpgClass.srpgWeapon.buffs[i]);
+            if (buff != null)
+            {
+                Debug.Log("Suc add buff");
+                buffManager.AddBuff((Buff)buff);
+            }
+
         }
 
     }
+    #endregion
 
     #region 初始化属性
     public void InitClassProperty(SrpgClass srpgClass)
@@ -313,16 +331,6 @@ public class SrpgClassUnit :  MapObject
     }
     #endregion
 
-    public override void OnSpawn()
-    {
-
-    }
-
-    public override void OnDispawn()
-    {
-
-    }
-
     #region 根据AI的职业来初始化AI状态机
     public void SetDefaultAIBaseOnClassType()
     {
@@ -349,10 +357,11 @@ public class SrpgClassUnit :  MapObject
     }
     #endregion
 
-    #region 被攻击方法
-    public DamageDetail OnDamaged(SrpgClassUnit attacker, SrpgTile srpgTile)
+    #region 被攻击方法(普通攻击)
+    public DamageDetail OnDamaged(SrpgClassUnit attacker)
     {
         DamageDetail damageDetail = new DamageDetail();
+        SrpgTile srpgTile = MapManager.instance.GetSrpgTilemapData(this.m_Position);
         if(attacker != null)
         {
             attacker.FaceTo(m_Position);
@@ -383,13 +392,13 @@ public class SrpgClassUnit :  MapObject
                 damageDetail.isCritical = true;
             }
         }
-
+        DamageDetail originDetail = new DamageDetail(damageDetail);
         #region 计算buff加成
         for (int i = 0; i < attacker.buffManager.buffs.Count; i++)
         {
             for(int j = 0; j < attacker.buffManager.buffs[i].buffEffects.Count; j++)
             {
-                attacker.buffManager.buffs[i].buffEffects[j].OnAttack(attacker, this,ref damageDetail);
+                attacker.buffManager.buffs[i].buffEffects[j].OnAttack(attacker, this,damageDetail,originDetail);
             }
         }
 
@@ -397,7 +406,7 @@ public class SrpgClassUnit :  MapObject
         {
             for (int j = 0; j < this.buffManager.buffs[i].buffEffects.Count; j++)
             {
-                this.buffManager.buffs[i].buffEffects[j].OnDefend(this,attacker,ref damageDetail);
+                this.buffManager.buffs[i].buffEffects[j].OnDefend(this,attacker,damageDetail,originDetail);
             }
         }
         #endregion
@@ -412,10 +421,85 @@ public class SrpgClassUnit :  MapObject
     }
     #endregion
 
+    #region 被攻击方法(技能伤害)
+    public DamageDetail OnDamaged(SrpgClassUnit attacker,int m_Damage,bool isHasAttacker)
+    {
+        DamageDetail damageDetail = new DamageDetail();
+        SrpgTile srpgTile = MapManager.instance.GetSrpgTilemapData(this.m_Position);
+        if (attacker != null && isHasAttacker)
+        {
+            attacker.FaceTo(m_Position);
+        }
+
+        int delta_Level = attacker.Level - srpgClass.level;
+        Mathf.Clamp(delta_Level, -5, 20);
+
+        int damage = (int)(m_Damage * ((100 - m_Property[SrpgClassPropertyType.Defense]) / 100.0) * (1 + (0.1 * delta_Level)) * Random.Range(0.85f, 1.15f));
+        int avoid_Chance = srpgTile.avoidChange + m_Property[SrpgClassPropertyType.Avoid];
+        int rd = Random.Range(0, 101);//闪避骰子
+        int rd2 = Random.Range(0, 101);//暴击骰子
+
+        if (isHasAttacker) {
+            //如果isHasAttacker 为 true，说明这次攻击是由Unit发动的
+            damageDetail.attacker = attacker;
+        }
+        else
+        {
+            //如果isHasAttacker 为 false，说明这次攻击是由Buff或者其他发动的，在Buff判断中需要这条另做判断
+            //例如反甲反弹的伤害当做无Attacker的伤害，对于无Attacker的伤害，反甲不会继续反弹，避免了俩个反甲无限反弹的局面。
+            damageDetail.attacker = null;
+        }
+
+        damageDetail.damage = damage;
+        damageDetail.defender = this;
+
+        if (rd <= avoid_Chance)
+        {
+            //damage = (int)(damage * 0.5);
+            damageDetail.isAvoid = true;
+        }
+        else
+        {
+            if (rd2 < attacker.critChance)
+            {
+                //damage *= attacker.critDamage / 100;
+                damageDetail.isCritical = true;
+            }
+        }
+
+        DamageDetail originDetail = new DamageDetail(damageDetail);
+
+        #region 计算buff加成
+        for (int i = 0; i < attacker.buffManager.buffs.Count; i++)
+        {
+            for (int j = 0; j < attacker.buffManager.buffs[i].buffEffects.Count; j++)
+            {
+                attacker.buffManager.buffs[i].buffEffects[j].OnAttack(attacker, this,damageDetail,originDetail);
+            }
+        }
+
+        for (int i = 0; i < this.buffManager.buffs.Count; i++)
+        {
+            for (int j = 0; j < this.buffManager.buffs[i].buffEffects.Count; j++)
+            {
+                this.buffManager.buffs[i].buffEffects[j].OnDefend(this, attacker,damageDetail,originDetail);
+            }
+        }
+        #endregion
+
+        ChangeHealth(damageDetail.damage);
+        Debug.Log($"Recive Damage :{damageDetail.damage.ToString()},curHealth :{curHealth}");
+
+        return damageDetail;
+
+    }
+    #endregion
+
     #region 获得Unit的真实属性
     private int GetState(SrpgClassPropertyType type)
     {
         int stateValue = m_Property[type];
+
         for(int i = 0; i < m_buffManager.buffs.Count; i++)
         {
             for(int j = 0; j < m_buffManager.buffs[i].buffEffects.Count; j++)
@@ -562,21 +646,27 @@ public class SrpgClassUnit :  MapObject
     }
     #endregion
 
+    #region 移除Class的道具
     public void RemoveItem(SrpgUseableItem m_Item)
     {
         srpgClass.items.Remove(m_Item);
     }
+    #endregion
 
+    #region 角色Unit死亡时调用
     private void onDead()
     {
         gameObject.SetActive(false);
         ScenceManager.instance.UnRegisterSRPGClass(this);
     }
+    #endregion
 
-    private void UpdateHPSlider()
+    #region 更新角色血条UI
+    public void UpdateHPSlider()
     {
         m_HPSlider.value = curHealth;
     }
+    #endregion
 
     #endregion
 }
@@ -589,4 +679,18 @@ public class DamageDetail
     public int damage;
     public bool isAvoid;
     public bool isCritical;
+
+    public DamageDetail()
+    {
+
+    }
+
+    public DamageDetail(DamageDetail originDamageDetail)
+    {
+        this.attacker = originDamageDetail.attacker;
+        this.defender = originDamageDetail.defender;
+        this.damage = originDamageDetail.damage;
+        this.isAvoid = originDamageDetail.isAvoid;
+        this.isCritical = originDamageDetail.isCritical;
+    }
 }
